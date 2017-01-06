@@ -1,0 +1,43 @@
+# Note: MAKE SURE THE GB_UPDATER PROPERTIES FILE IS SET TO THE CORRECT DB. SHOULD BE THE SAME AS THE BIG DB IN THIS FILE
+
+DB.User=<DB User>
+DB.PW=<DB Password>
+DB.Host=<DB Host>
+
+#Main DB
+DB.Big.Name=<DB Name>
+
+#Small UI DB, leave blank if only 1 is used
+DB.Small.Name=<DB Name>
+
+#-------------Index--------------------#
+index.big.dir=<Big Lucene Index path>
+# ui dir leave blank if only 1 is used
+index.ui.dir=<UI Lucene Index path>
+
+#----------------Resources---------------#
+#the path to the files dump of the taxonomy
+genbank.taxonomy=<Taxonomy dump path>
+#___________________________________________________________________________________
+#				Parameters for GenBank Data Dump
+#___________________________________________________________________________________
+
+# file limit. Make -1 if no limit
+genbank.file_limit=
+#define if the dump files are downloaded from GenBank
+genbank.use_local_files=
+# leave blank if starting at beginning
+genbank.start_at_file=
+genbank.download_url=https://ftp.ncbi.nih.gov/genbank
+# directory to store GenBank files
+gzip.directory=
+#if yes the files are downloaded on the server and not processed
+genbank.download_only=no
+pmcid.download_url=ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz
+# directory to store Geoname files
+geo.dir=
+geo.url=http://download.geonames.org/export/dump/
+# pmcid to pmid mapping csv folder
+pmcid.csv.dir=
+# path to geoname updator folder
+geoname.updater.dir=
