@@ -48,12 +48,16 @@ public class Main {
 	    		gbFact = GenBankFactory.getInstance();
 	 			if (args.length == 1) {
 	 				System.err.println("WARNING: the DB will not be created/cleared for the data dump. Appending existing DB data.");
+	 				TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
+					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
+					taxo.insertTaxo();
 	 			}
 	 			else if(args[1].equalsIgnoreCase("clean")) {
 					//Can be changed to GenBankRecordHibernateDAO to switch concrete implementation from SQL to Hibernate//
 			    	dao = new GenBankRecordSqlDAO();
 					dao.clearTables(); //we should be dumping into a fresh DB, so this is mainly for testing//
 					//insert/align taxonomy//
+					TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 					taxo.insertTaxo();
 	 			}
@@ -62,6 +66,7 @@ public class Main {
 			    	dao = new GenBankRecordSqlDAO();
 					dao.createTables();
 					//insert/align taxonomy//
+					TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 					taxo.insertTaxo();
 				}

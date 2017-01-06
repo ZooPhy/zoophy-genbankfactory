@@ -1,7 +1,17 @@
 package edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -10,6 +20,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
@@ -20,7 +35,7 @@ import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
  * @author Davy
  */
 public class TaxonomyInserter  {
-	private final Logger log = Logger.getLogger("TaxonomyInserter");
+	private static final Logger log = Logger.getLogger("TaxonomyInserter");
 
 	final String INSERT_CONCEPT 	= "INSERT INTO \"Taxonomy_Concept\" VALUES (?,?,?,?)";
 	final String INSERT_TREE 		= "INSERT INTO \"Taxonomy_Tree\" VALUES (?,?,?,?,?)";
@@ -253,6 +268,57 @@ public class TaxonomyInserter  {
 				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
 			}
 		}		
+	}
+
+	/**
+	 * Downloads new taxonomy files from NCBI
+	 * @throws Exception 
+	 */
+	public static void downloadNewTree(String downloadURL, String taxonomyDir) throws Exception {
+		try {
+			log.info("Downloading new Taxonomy files..");
+			String dir = taxonomyDir;
+			String fileUrl = downloadURL;
+			InputStream in = null;
+		    FileOutputStream fout = null;
+	    	log.info("Downloading taxdump.tar.gz...");
+	    	URL url = new URL(fileUrl);
+	        in = new BufferedInputStream(url.openStream());
+	        fout = new FileOutputStream(dir+"taxdump.tar.gz");
+	        final byte data[] = new byte[1024];
+	        int count;
+	        while ((count = in.read(data)) != -1) {
+	            fout.write(data, 0, count);
+	        }
+	        fout.flush();
+	        in.close();
+	        fout.close();
+	        log.info("Finished downloading taxdump.tar.gz. Exctracting files from TAR...");
+	        TarArchiveInputStream tarIn = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(dir+"taxdump.tar.gz")));
+	        TarArchiveEntry entry = tarIn.getNextTarEntry();
+	        while (entry != null) {
+	        	if (entry.getName().equals("nodes.dmp") || entry.getName().equals("names.dmp") || entry.getName().equals("division.dmp")) {
+	        		log.info("Extracting: "+entry.getName());
+		            File curfile = new File(dir, entry.getName());
+		            OutputStream out = new FileOutputStream(curfile);
+		            IOUtils.copy(tarIn, out);
+		            out.close();
+		            log.info("Extracted: "+entry.getName());
+	        	}
+	            entry = tarIn.getNextTarEntry();
+	        }
+	        tarIn.close();
+	        log.info("TAR files extracted");
+	        log.info("Deleting taxdump.tar.gz");
+	        String textDeletePath = dir+"taxdump.tar.gz";
+	        Path deletePath = Paths.get(textDeletePath);
+			Files.delete(deletePath);
+	        log.info("Deleted taxdump.tar.gz");
+		}
+		catch (Exception e) {
+			log.log(Level.SEVERE, "Failed to download new Taxonomy files: "+e.getMessage());
+			throw e;
+		}
 	}
 	
 }

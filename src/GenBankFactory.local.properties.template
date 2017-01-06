@@ -16,6 +16,7 @@ index.big.dir=<Big Lucene Index path>
 index.ui.dir=<UI Lucene Index path>
 
 #----------------Resources---------------#
+genbank.taxonomy.url=ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
 #the path to the files dump of the taxonomy
 genbank.taxonomy=<Taxonomy dump path>
 #___________________________________________________________________________________

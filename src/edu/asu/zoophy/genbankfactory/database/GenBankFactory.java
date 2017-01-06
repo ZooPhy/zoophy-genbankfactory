@@ -135,7 +135,8 @@ public class GenBankFactory {
 			String smallDB = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("DB.Small.Name");
 			String bigIndex = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("index.big.dir");
 			String smallIndex = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("index.ui.dir");
-			String taxDumpFolder = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy");;
+			String taxDumpFolder = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy");
+			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -151,7 +152,7 @@ public class GenBankFactory {
 			properties.put("GeonameADMFile", geoADMFile);
 			properties.put("GeonameURL", geoUrl);
 			properties.put("TaxDumpFolder", taxDumpFolder);
-			
+			properties.put("TaxDumpURL", taxDumpURL);
 			properties.put("BigDB", bigDB);
 			properties.put("SmallDB", smallDB);
 			properties.put("BigIndex", bigIndex);
