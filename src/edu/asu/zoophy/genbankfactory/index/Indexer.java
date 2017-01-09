@@ -244,7 +244,9 @@ public class Indexer {
 				doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 			}
 		}
+		doc.add(new Field("PH1N1", String.valueOf(record.getSequence().isPH1N1()), Field.Store.YES, Field.Index.NOT_ANALYZED));
 	}
+	
 	private void checkForFullGenome(GenBankRecord record) {
 		try {
 			List<String> genes = new LinkedList<String>();

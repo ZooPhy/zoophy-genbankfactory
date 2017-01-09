@@ -35,7 +35,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String FULL_GEONAME_LOCATION_INSERT = "INSERT INTO \"Location_Geoname\"(\"Accession\", \"Geoname_ID\", \"Location\", \"Latitude\", \"Longitude\", \"Type\", \"Country\") VALUES (?, ?, ?, ?, ?, ?, ?);";
 	private final String PUBLICATION_INSERT = "INSERT INTO \"Publication\"(\"Pub_ID\",\"Pubmed_ID\",\"Pubmed_Central_ID\",\"Authors\",\"Title\",\"Journal\") VALUES(default,?,?,?,?,?);";
 	private final String SEQUENCE_INSERT = "INSERT INTO \"Sequence\"(\"Accession\",\"Sequence\",\"Segment_Length\") VALUES(?,?,?);";
-	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\") VALUES(?,?,?,?,?,?,?,?,?,?);";
+	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\",\"pH1N1\") VALUES(?,?,?,?,?,?,?,?,?,?,?);";
 	private final String SEQUENCE_PUBLICATION_INSERT = "INSERT INTO \"Sequence_Publication\"(\"Accession\",\"Pub_ID\") VALUES(?,?);";
 	private final String CHECK_PUBLICATION = "SELECT * FROM \"Publication\" WHERE \"Pubmed_ID\"=?";
 	private final String RETRIEVE_DETAILS = "SELECT * FROM \"Sequence_Details\" WHERE \"Accession\"=?";
@@ -184,6 +184,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					queryParams.add(seq.getItv_from());
 					queryParams.add(seq.getItv_to());
 					queryParams.add(seq.getComment());
+					queryParams.add(seq.isPH1N1());
 					detailsQuery.addBatch(queryParams);
 					seq = null;
 					queryParams.clear();
@@ -540,6 +541,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			seq.setTax_id(rs.getInt("Tax_ID"));
 			seq.setItv_from(rs.getInt("Itv_From"));
 			seq.setItv_to(rs.getInt("Itv_To"));
+			seq.setPH1N1(rs.getBoolean("pH1N1"));
 			rs.close();
 		}
 		catch (Exception e) {
@@ -898,6 +900,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					seq.setPub(pub);
 				}
 				seq.setSegment_length(rs.getInt("Segment_Length"));
+				seq.setPH1N1(rs.getBoolean("pH1N1"));
 				rec.setSequence(seq);
 				rec.setGenes(getIndexGeneName(accession));
 				Host host = new Host();
