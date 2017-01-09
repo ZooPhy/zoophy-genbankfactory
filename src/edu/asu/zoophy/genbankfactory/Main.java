@@ -111,6 +111,7 @@ public class Main {
 	    	else if (args.length < 2 && args[0].equalsIgnoreCase("index")) {
 	 			log.warning("Only Indexing the current DB, no data dumping will occur.");
 	    		gbFact = GenBankFactory.getInstance();
+	    		TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 	    		Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 	    	}
@@ -121,6 +122,7 @@ public class Main {
 				log.info("Switching to Small DB");
 				gbFact.switchDB(gbFact.getProperty("SmallDB"));
 				dao.clearTables();
+				TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 				taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 				taxo.insertTaxo();
 	 			//funnel to UI DB//
