@@ -21,6 +21,7 @@ public class Sequence {
 	private int segment_length;
 	//for Sequence_Publication table//
 	private Publication pub;
+	private boolean isPH1N1 = false;
 	
 	public Sequence() {
 		//default//
@@ -129,5 +130,14 @@ public class Sequence {
 
 	public void setSegment_length(int segment_length) {
 		this.segment_length = segment_length;
-	}	
+	}
+
+	public boolean isPH1N1() {
+		return isPH1N1;
+	}
+
+	public void setPH1N1(boolean isPH1N1) {
+		this.isPH1N1 = isPH1N1;
+	}
+	
 }

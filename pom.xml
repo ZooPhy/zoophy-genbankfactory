@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.asu.zoophy</groupId>
   <artifactId>zoophy-genbank-factory</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <name>genbankfactory</name>
   <description>Handles data dumping and normalization from GenBank.</description>
   

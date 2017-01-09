@@ -137,6 +137,7 @@ public class GenBankFactory {
 			String smallIndex = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("index.ui.dir");
 			String taxDumpFolder = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy");
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
+			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -157,6 +158,7 @@ public class GenBankFactory {
 			properties.put("SmallDB", smallDB);
 			properties.put("BigIndex", bigIndex);
 			properties.put("SmallIndex", smallIndex);
+			properties.put("PH1N1List", pH1N1List);
 		} 
 		catch (Exception e) {
 			log.log(Level.SEVERE, "error getting properties file");

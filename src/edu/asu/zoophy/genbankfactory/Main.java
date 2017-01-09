@@ -1,6 +1,8 @@
 package edu.asu.zoophy.genbankfactory;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordDAOInt;
@@ -9,6 +11,7 @@ import edu.asu.zoophy.genbankfactory.database.funnel.VirusFunnel;
 import edu.asu.zoophy.genbankfactory.index.Indexer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.date.DateNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.GeneNormalizer;
+import edu.asu.zoophy.genbankfactory.utils.pH1N1.PH1N1Inserter;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostAligner;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.TaxonomyInserter;
@@ -24,17 +27,18 @@ public class Main {
 	
 	private static GenBankRecordDAOInt dao;
 	private static String filter = null;
+	private static Logger log = Logger.getLogger("Main");
 	
 	public static void main(String[] args) {
 		try {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
-	    		System.err.println("ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
+	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    	}
 	    	else if (args[0].equalsIgnoreCase("help")) {
 	    		help();
-	    		System.exit(1);
+	    		System.exit(0);
 	    	}
 	    	else if (args.length < 5 && args[0].equalsIgnoreCase("dump")) {
 	    		if (args.length > 3) {
@@ -47,7 +51,7 @@ public class Main {
 	    		}
 	    		gbFact = GenBankFactory.getInstance();
 	 			if (args.length == 1) {
-	 				System.err.println("WARNING: the DB will not be created/cleared for the data dump. Appending existing DB data.");
+	 				log.warning("WARNING: the DB will not be created/cleared for the data dump. Appending existing DB data.");
 	 				TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 					taxo.insertTaxo();
@@ -83,11 +87,13 @@ public class Main {
 	 			dn.normalizeDates();
 	 			//Update GeoName Locations//
 				runGeonameUpdater();
+				//Identify pH1N1 sequences//
+				PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
 				//Create Big Index//
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 				//clear small DB//
-				System.out.println("Switching to Small DB");
+				log.info("Switching to Small DB");
 				gbFact.switchDB(gbFact.getProperty("SmallDB"));
 				dao.clearTables();
 				taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
@@ -103,15 +109,29 @@ public class Main {
 				indexer.index();
 	    	}
 	    	else if (args.length < 2 && args[0].equalsIgnoreCase("index")) {
-	 			System.err.println("Only Indexing the current DB, no data dumping will occur.");
+	 			log.warning("Only Indexing the current DB, no data dumping will occur.");
 	    		gbFact = GenBankFactory.getInstance();
 	    		Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 	    	}
 	    	else if (args.length < 2 && args[0].equalsIgnoreCase("funnel")) {
-	 			System.err.println("Funneling big DB to small UI DB...");
+	 			log.warning("Funneling big DB to small UI DB...");
 	    		gbFact = GenBankFactory.getInstance();
-	 			
+	    		//clear small DB//
+				log.info("Switching to Small DB");
+				gbFact.switchDB(gbFact.getProperty("SmallDB"));
+				dao.clearTables();
+				taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
+				taxo.insertTaxo();
+	 			//funnel to UI DB//
+	 			VirusFunnel funnel = new VirusFunnel(gbFact.getProperty("BigIndex"), gbFact.getProperty("SmallDB"), gbFact.getProperty("BigDB"));
+	 			funnel.funnel();
+				//update gene names in UI DB//
+				GeneNormalizer gn = GeneNormalizer.getInstance();
+				gn.normalizeGeneNames(); //only to be used on small UI DB
+				//Create UI Index//
+				Indexer indexer = new Indexer(gbFact.getProperty("SmallIndex"));
+				indexer.index();
 	    	}
 	    	else if (args.length < 3 && args[0].equalsIgnoreCase("normalize")) {
 	    		if (args[1].equalsIgnoreCase("host")) {
@@ -133,44 +153,48 @@ public class Main {
 		 			DateNormalizer dn = DateNormalizer.getInstance();
 		 			dn.normalizeDates();
 	    		}
+	    		else if (args[1].equalsIgnoreCase("ph1n1")) {
+	    			gbFact = GenBankFactory.getInstance();
+	    			PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
+	    		}
 	    		else {
 	    			throw new Exception("Invalid command line arguments! Use \"help\" for jar argument instructions.");
 	    		}
 	    	}
 	    	else {
-	    		System.err.println("ERROR! Unrecognized command. Use \"help\" for jar argument instructions.");
+	    		log.log(Level.SEVERE, "ERROR! Unrecognized command. Use \"help\" for jar argument instructions.");
 	    	}
-	    	System.out.println("GenBankFactory completed.");
+	    	log.info("GenBankFactory completed.");
 			System.exit(0);
 		}
 		catch(Exception e) {
-			System.err.println("Error running GenBankFactory: " + e.getMessage());
+			log.log(Level.SEVERE, "ERROR running GenBankFactory: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
-	private static void runGeonameUpdater() {
+	private static void runGeonameUpdater() throws Exception {
 		String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
 		File updaterFolder = new File(updaterDir);
 		if (!(updaterFolder.isDirectory() && updaterFolder.exists())) {
-			System.err.println("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
-			System.exit(1);
+			log.log(Level.SEVERE, "GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+			throw new Exception("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
 		}
 		try {
 			ProcessBuilder pb = new ProcessBuilder("java", "-Xmx4G", "-Xms1G", "-jar", updaterDir+"gbmetadataupdater.jar").inheritIO().directory(updaterFolder);
-			System.out.println("Starting Process: "+pb.command().toString());
+			log.info("Starting Process: "+pb.command().toString());
 			Process pr = pb.start();
 			pr.waitFor();
 			if (pr.exitValue() != 0) {
-				System.err.println("GeonameUpdater failed! with code: "+pr.exitValue());
-				System.exit(1);
+				log.log(Level.SEVERE, "GeonameUpdater failed! with code: "+pr.exitValue());
+				throw new Exception("GeonameUpdater failed! with code: "+pr.exitValue());
 			}
-			System.out.println("Geoname Updater Complete");
+			log.info("Geoname Updater Complete");
 		}
 		catch (Exception e) {
-			System.err.println("GeonameUpdater Error: "+e.getMessage());
-			System.exit(1);
+			log.log(Level.SEVERE, "GeonameUpdater Error: "+e.getMessage());
+			throw e;
 		}
 	}
 	
@@ -193,7 +217,7 @@ public class Main {
 		str.append("\t\tDouble check the GenBankFactory.local.properties file to make sure that all file paths and DB connection info is correct.\n");
 		str.append("\t\tOnce you run a command, it will proceed without confirmation. Be careful running 'dump clean' in production.\n");
 		str.append("\t\tAt the moment, only 1 filter may be used with '-f'. The filter is not regex, just an enhanced string.contains() that can handle null filters.\n");
-		System.out.println(str.toString());
+		log.info(str.toString());
 	}
 	
 }

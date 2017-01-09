@@ -42,3 +42,5 @@ geo.url=http://download.geonames.org/export/dump/
 pmcid.csv.dir=
 # path to geoname updator folder
 geoname.updater.dir=
+# path to pH1N1 accession .txt list
+ph1n1.list=
