@@ -16,6 +16,7 @@ index.big.dir=<Big Lucene Index path>
 index.ui.dir=<UI Lucene Index path>
 
 #----------------Resources---------------#
+genbank.taxonomy.url=ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
 #the path to the files dump of the taxonomy
 genbank.taxonomy=<Taxonomy dump path>
 #___________________________________________________________________________________
@@ -41,3 +42,5 @@ geo.url=http://download.geonames.org/export/dump/
 pmcid.csv.dir=
 # path to geoname updator folder
 geoname.updater.dir=
+# path to pH1N1 accession .txt list
+ph1n1.list=

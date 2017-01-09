@@ -35,7 +35,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String FULL_GEONAME_LOCATION_INSERT = "INSERT INTO \"Location_Geoname\"(\"Accession\", \"Geoname_ID\", \"Location\", \"Latitude\", \"Longitude\", \"Type\", \"Country\") VALUES (?, ?, ?, ?, ?, ?, ?);";
 	private final String PUBLICATION_INSERT = "INSERT INTO \"Publication\"(\"Pub_ID\",\"Pubmed_ID\",\"Pubmed_Central_ID\",\"Authors\",\"Title\",\"Journal\") VALUES(default,?,?,?,?,?);";
 	private final String SEQUENCE_INSERT = "INSERT INTO \"Sequence\"(\"Accession\",\"Sequence\",\"Segment_Length\") VALUES(?,?,?);";
-	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\") VALUES(?,?,?,?,?,?,?,?,?,?);";
+	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\",\"pH1N1\") VALUES(?,?,?,?,?,?,?,?,?,?,?);";
 	private final String SEQUENCE_PUBLICATION_INSERT = "INSERT INTO \"Sequence_Publication\"(\"Accession\",\"Pub_ID\") VALUES(?,?);";
 	private final String CHECK_PUBLICATION = "SELECT * FROM \"Publication\" WHERE \"Pubmed_ID\"=?";
 	private final String RETRIEVE_DETAILS = "SELECT * FROM \"Sequence_Details\" WHERE \"Accession\"=?";
@@ -47,7 +47,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String RETRIEVE_GENBANK_LOCATION = "SELECT * FROM \"Location_GenBank\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_GEONAME_LOCATION = "SELECT * FROM \"Location_Geoname\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_PUBLICATION = "SELECT * FROM \"Publication\" JOIN \"Sequence_Publication\" ON (\"Publication\".\"Pubmed_ID\" = \"Sequence_Publication\".\"Pub_ID\") WHERE \"Accession\"=?";
-	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
+	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"pH1N1\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
 	private final String RETRIEVE_INDEX_GENES = "SELECT \"Normalized_Gene_Name\" FROM \"Gene\" WHERE \"Accession\"=?";
 	
 	//Query objects defined in Davy's WipeFinder project//
@@ -184,6 +184,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					queryParams.add(seq.getItv_from());
 					queryParams.add(seq.getItv_to());
 					queryParams.add(seq.getComment());
+					queryParams.add(seq.isPH1N1());
 					detailsQuery.addBatch(queryParams);
 					seq = null;
 					queryParams.clear();
@@ -540,6 +541,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			seq.setTax_id(rs.getInt("Tax_ID"));
 			seq.setItv_from(rs.getInt("Itv_From"));
 			seq.setItv_to(rs.getInt("Itv_To"));
+			seq.setPH1N1(rs.getBoolean("pH1N1"));
 			rs.close();
 		}
 		catch (Exception e) {
@@ -870,7 +872,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	}
 	
 	@Override
-	public List<GenBankRecord> getIndexableRecords(long limit, long offset) {
+	public List<GenBankRecord> getIndexableRecords(long limit, long offset) throws Exception {
 		List<GenBankRecord> records = new LinkedList<GenBankRecord>();
 		Connection conn = null;
 		List<Object> queryParams = new LinkedList<Object>();
@@ -898,6 +900,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					seq.setPub(pub);
 				}
 				seq.setSegment_length(rs.getInt("Segment_Length"));
+				seq.setPH1N1(rs.getBoolean("pH1N1"));
 				rec.setSequence(seq);
 				rec.setGenes(getIndexGeneName(accession));
 				Host host = new Host();
@@ -918,6 +921,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error pulling records for Index " + e.getMessage());
+			throw e;
 		}
 		finally {
 			closeConn(conn);

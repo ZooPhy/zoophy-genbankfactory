@@ -31,7 +31,7 @@ public interface GenBankRecordDAOInt {
 	 * @param offset GBR row to start at (for looping through entire db in batches)
 	 * @return List of GBR that contains only necessary info for Indexing
 	 */
-	public List<GenBankRecord> getIndexableRecords(long limit, long offset);
+	public List<GenBankRecord> getIndexableRecords(long limit, long offset) throws Exception;
 	
 	public PossibleLocation findGeonameLocation(String accession);
 	
