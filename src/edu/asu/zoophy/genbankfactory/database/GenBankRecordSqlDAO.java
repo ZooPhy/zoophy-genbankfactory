@@ -47,7 +47,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String RETRIEVE_GENBANK_LOCATION = "SELECT * FROM \"Location_GenBank\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_GEONAME_LOCATION = "SELECT * FROM \"Location_Geoname\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_PUBLICATION = "SELECT * FROM \"Publication\" JOIN \"Sequence_Publication\" ON (\"Publication\".\"Pubmed_ID\" = \"Sequence_Publication\".\"Pub_ID\") WHERE \"Accession\"=?";
-	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
+	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"pH1N1\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
 	private final String RETRIEVE_INDEX_GENES = "SELECT \"Normalized_Gene_Name\" FROM \"Gene\" WHERE \"Accession\"=?";
 	
 	//Query objects defined in Davy's WipeFinder project//
@@ -872,7 +872,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	}
 	
 	@Override
-	public List<GenBankRecord> getIndexableRecords(long limit, long offset) {
+	public List<GenBankRecord> getIndexableRecords(long limit, long offset) throws Exception {
 		List<GenBankRecord> records = new LinkedList<GenBankRecord>();
 		Connection conn = null;
 		List<Object> queryParams = new LinkedList<Object>();
@@ -921,6 +921,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error pulling records for Index " + e.getMessage());
+			throw e;
 		}
 		finally {
 			closeConn(conn);
