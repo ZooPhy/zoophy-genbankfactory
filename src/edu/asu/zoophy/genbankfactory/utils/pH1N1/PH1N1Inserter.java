@@ -20,7 +20,7 @@ public class PH1N1Inserter {
 	private static Logger log = Logger.getLogger("PH1N1Inserter");
 	private static Connection conn;
 	private static DBQuery updatPH1N1Query;
-	private final static String UPDATE_PH1N1 = "UPDATE \"Sequence_Details\" SET \"ph1n1\"=True WHERE \"Accession\"='';";
+	private final static String UPDATE_PH1N1 = "UPDATE \"Sequence_Details\" SET \"pH1N1\"=TRUE WHERE \"Accession\"=?;";
 
 	public static void updateSequences(String pH1N1ListPath) throws Exception {
 		Scanner scan = null;
@@ -65,10 +65,15 @@ public class PH1N1Inserter {
 		List<Object> queryParams;
 		while (!accessions.isEmpty()) {
 			queryParams = new LinkedList<Object>();
-			queryParams.add(accessions.remove());
+			String acc = accessions.remove().trim();
+			if (acc.contains("*")) {
+				acc = acc.substring(0, acc.indexOf("*"));
+			}
+			queryParams.add(acc);
+			updatPH1N1Query.addBatch(queryParams);
 			batchCount++;
 			if (batchCount % 25000 == 0 || accessions.isEmpty()) {
-				log.info("Runnign update PH1N1 batch...");
+				log.info("Running update PH1N1 batch...");
 				updatPH1N1Query.executeBatch();
 				updatPH1N1Query.close();
 				log.info("Update PH1N1 batch complete.");
