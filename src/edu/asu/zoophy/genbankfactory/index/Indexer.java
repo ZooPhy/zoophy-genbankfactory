@@ -268,10 +268,10 @@ public class Indexer {
 	 */
 	protected void setHost(GenBankRecord record, GenBankTree gbTree) {
 		if (record.getHost().getName() != null) {
-			doc.add(new Field("Host_Name", record.getHost().getName(), Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new Field("Host_Name", record.getHost().getName().toLowerCase(), Field.Store.YES, Field.Index.ANALYZED));
 		}
 		else {
-			doc.add(new Field("Host_Name", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new Field("Host_Name", "Unknown".toLowerCase(), Field.Store.YES, Field.Index.ANALYZED));
 		}
 		if (record.getHost().getTaxon() <= 1 || record.getHost().getName() == null) {
 			doc.add(new Field("HostID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
@@ -283,11 +283,11 @@ public class Indexer {
 					String cpts = gbTree.getNode(record.getHost().getTaxon()).getConcept();
 					if(cpts.contains(" | ")) {
 						for(String cpt: cpts.split(" \\| ")) {
-							doc.add(new Field("Host", cpt, Field.Store.YES, Field.Index.ANALYZED));
+							doc.add(new Field("Host", cpt.toLowerCase(), Field.Store.YES, Field.Index.ANALYZED));
 						}
 					}
 					else {
-						doc.add(new Field("Host", cpts, Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new Field("Host", cpts.toLowerCase(), Field.Store.YES, Field.Index.ANALYZED));
 					}
 					doc.add(new Field("HostID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES, Field.Index.NOT_ANALYZED));
 					List<Node> ancestors = node.getAncestors();
