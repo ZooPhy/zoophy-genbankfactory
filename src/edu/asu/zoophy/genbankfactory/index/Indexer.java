@@ -16,7 +16,9 @@ import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankRecord;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordDAOInt;
@@ -96,10 +98,7 @@ public class Indexer {
     	    }
 	    }
 	    createIndex(indexDir);
-	    log.info("start process with index:"+writer.getDirectory());
-	    writer.setMaxFieldLength(50000);
-	    writer.setUseCompoundFile(false);
-	    log.info("Indexer initialized");
+	    log.info("Indexer initialized with index:"+writer.getDirectory().toString());
 	}
 	
 	/**
@@ -108,7 +107,8 @@ public class Indexer {
 	 */
 	protected void createIndex(File indexDir) throws IndexerException {
     	try {
-        	writer = new IndexWriter(FSDirectory.open(indexDir), new KeywordAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+    		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_36, new KeywordAnalyzer());//TODO: keep changing versions
+    		writer = new IndexWriter(FSDirectory.open(indexDir), config);
         	log.info("Creation of a new index.");    		
     	}
     	catch(Exception e) {
@@ -662,8 +662,6 @@ public class Indexer {
 	public void Close() {
 		try {
 		    log.info(writer.maxDoc()+" documents indexed.");
-		    writer.optimize();
-		    log.info("Index optimization completed.");
 		    writer.close();
 		    log.info("Index closed successfully.");
 		}

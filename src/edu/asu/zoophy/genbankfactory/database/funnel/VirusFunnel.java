@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -42,7 +43,8 @@ public class VirusFunnel {
 		try {
 			log.info("Starting Virus Funnel...");
 			indexDirectory = FSDirectory.open(new File(BIG_INDEX_LOCATION));
-			indexSearcher = new IndexSearcher(indexDirectory);
+			IndexReader reader = IndexReader.open(indexDirectory);
+			indexSearcher = new IndexSearcher(reader);
 			queryParser = new QueryParser(Version.LUCENE_30, "text", new StandardAnalyzer(Version.LUCENE_30));
 			accs = new HashSet<String>();
 			funnelled = 0;
@@ -51,7 +53,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 			}
 		    log.info("Funneling "+(accs.size()-funnelled)+" WNV records...");
 		    funnelled = accs.size();
@@ -60,7 +62,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 			}
 		    log.info("Funneling "+(accs.size()-funnelled)+" Zika records...");
 		    funnelled = accs.size();
@@ -69,7 +71,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Ebola records...");
 		    funnelled = accs.size();
@@ -78,7 +80,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Hanta records...");
 		    funnelled = accs.size();
@@ -87,7 +89,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Rabies records...");
 		    funnelled = accs.size();
@@ -96,7 +98,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Flu A records...");
 		    funnelled = accs.size();
@@ -105,7 +107,7 @@ public class VirusFunnel {
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);
-	  	         accs.add(doc.getField("Accession").stringValue());
+	  	         accs.add(doc.get("Accession"));
 	  	    }
 	  	    log.info("Funneling "+(accs.size()-funnelled)+" Flu B records...");
 	  	    funnelled = accs.size();
@@ -114,7 +116,7 @@ public class VirusFunnel {
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);
-	  	         accs.add(doc.getField("Accession").stringValue());
+	  	         accs.add(doc.get("Accession"));
 	  	    }
 	  	    log.info("Funneling "+(accs.size()-funnelled)+" Flu C records...");
 	  	    funnelled = accs.size();
