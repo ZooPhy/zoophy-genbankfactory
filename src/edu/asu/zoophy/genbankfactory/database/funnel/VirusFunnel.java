@@ -1,17 +1,17 @@
 package edu.asu.zoophy.genbankfactory.database.funnel;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -27,6 +27,7 @@ public class VirusFunnel {
 	private Queue<String> usableAccs = null;
 	private HashSet<String> accs = null;
 	private IndexSearcher indexSearcher = null;
+	IndexReader reader = null;
 	private QueryParser queryParser = null;
 	private Query query = null;
 	private TopDocs docs = null;
@@ -43,9 +44,9 @@ public class VirusFunnel {
 		try {
 			log.info("Starting Virus Funnel...");
 			indexDirectory = FSDirectory.open(new File(BIG_INDEX_LOCATION));
-			IndexReader reader = IndexReader.open(indexDirectory);
+			reader = DirectoryReader.open(indexDirectory);
 			indexSearcher = new IndexSearcher(reader);
-			queryParser = new QueryParser(Version.LUCENE_30, "text", new StandardAnalyzer(Version.LUCENE_30));
+			queryParser = new QueryParser(Version.LUCENE_40, "text", new KeywordAnalyzer());
 			accs = new HashSet<String>();
 			funnelled = 0;
 			//WNV//
@@ -133,14 +134,9 @@ public class VirusFunnel {
 			throw e;
 		}
 		finally {
-			 if (indexSearcher != null) {
-				try {
-					indexSearcher.close();
-				}
-				catch (IOException e) {
-					log.warning("Could not close Index: "+e.getMessage());
-				}
-			 }
+			if (reader != null) {
+				reader.close();
+			}
 		}
 	}
 	
