@@ -1,6 +1,8 @@
 package edu.asu.zoophy.genbankfactory.index;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,8 +21,8 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankRecord;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordDAOInt;
@@ -33,6 +35,7 @@ import edu.asu.zoophy.genbankfactory.utils.taxonomy.GeoNameTree;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.Node;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
+import jp.ac.toyota_ti.coin.wipefinder.server.utils.PropertiesProvider;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 
 /**
@@ -54,6 +57,7 @@ public class Indexer {
 	private Connection conn = null;
 //	private Corpus corpus = null;
 	private IndexWriter writer = null;
+	private Directory luceneDir = null;
 	private GeneNormalizer gn;
 	
 	private int missingLocs = 0;
@@ -99,18 +103,19 @@ public class Indexer {
     	        }
     	    }
 	    }
-	    createIndex(indexDir);
-	    log.info("Indexer initialized with index:"+writer.getDirectory().toString());
+	    createIndex(Paths.get(indexPath));
+	    log.info("Indexer initialized with index at:"+indexPath);
 	}
 	
 	/**
 	 * Open the index in creation mode
 	 * @parameter the file where to create the index
 	 */
-	protected void createIndex(File indexDir) throws IndexerException {
+	protected void createIndex(Path indexDir) throws IndexerException {
     	try {
-    		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_40, new KeywordAnalyzer());
-    		writer = new IndexWriter(FSDirectory.open(indexDir), config);
+    		IndexWriterConfig config = new IndexWriterConfig(new KeywordAnalyzer());
+    		luceneDir = FSDirectory.open(indexDir);
+    		writer = new IndexWriter(luceneDir, config);
         	log.info("Creation of a new index.");    		
     	}
     	catch(Exception e) {
@@ -665,6 +670,7 @@ public class Indexer {
 		try {
 		    log.info(writer.maxDoc()+" documents indexed.");
 		    writer.close();
+		    luceneDir.close();
 		    log.info("Index closed successfully.");
 		}
 		catch (Exception e) {
@@ -758,16 +764,16 @@ public class Indexer {
 		}
 		finally {
 			try {
-				if (rs!=null) {
+				if (rs != null) {
 					rs.close();
 				}
-				if (stm!=null) {
+				if (stm != null) {
 					stm.close();
 				}
 				this.Close();
 			}
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
+				log.log(Level.SEVERE, "ERROR could not close SQL resource(s): "+e.getMessage());
 			}
 			log.info("Total Missing Locations: "+missingLocs);
 			log.info("Country Mapped Locations: "+countryMappedLocs);

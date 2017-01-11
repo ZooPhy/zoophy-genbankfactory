@@ -1,6 +1,6 @@
 package edu.asu.zoophy.genbankfactory.database.funnel;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -18,7 +18,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 public class VirusFunnel {
 	
@@ -43,10 +42,10 @@ public class VirusFunnel {
 	public void funnel() throws Exception {
 		try {
 			log.info("Starting Virus Funnel...");
-			indexDirectory = FSDirectory.open(new File(BIG_INDEX_LOCATION));
+			indexDirectory = FSDirectory.open(Paths.get(BIG_INDEX_LOCATION));
 			reader = DirectoryReader.open(indexDirectory);
 			indexSearcher = new IndexSearcher(reader);
-			queryParser = new QueryParser(Version.LUCENE_40, "text", new KeywordAnalyzer());
+			queryParser = new QueryParser("Accession", new KeywordAnalyzer());
 			accs = new HashSet<String>();
 			funnelled = 0;
 			//WNV//
