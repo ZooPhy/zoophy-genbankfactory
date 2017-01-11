@@ -1,23 +1,23 @@
 package edu.asu.zoophy.genbankfactory.database.funnel;
 
-import java.io.File;
-import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 public class VirusFunnel {
 	
@@ -26,6 +26,7 @@ public class VirusFunnel {
 	private Queue<String> usableAccs = null;
 	private HashSet<String> accs = null;
 	private IndexSearcher indexSearcher = null;
+	IndexReader reader = null;
 	private QueryParser queryParser = null;
 	private Query query = null;
 	private TopDocs docs = null;
@@ -41,9 +42,10 @@ public class VirusFunnel {
 	public void funnel() throws Exception {
 		try {
 			log.info("Starting Virus Funnel...");
-			indexDirectory = FSDirectory.open(new File(BIG_INDEX_LOCATION));
-			indexSearcher = new IndexSearcher(indexDirectory);
-			queryParser = new QueryParser(Version.LUCENE_30, "text", new StandardAnalyzer(Version.LUCENE_30));
+			indexDirectory = FSDirectory.open(Paths.get(BIG_INDEX_LOCATION));
+			reader = DirectoryReader.open(indexDirectory);
+			indexSearcher = new IndexSearcher(reader);
+			queryParser = new QueryParser("Accession", new KeywordAnalyzer());
 			accs = new HashSet<String>();
 			funnelled = 0;
 			//WNV//
@@ -51,7 +53,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 			}
 		    log.info("Funneling "+(accs.size()-funnelled)+" WNV records...");
 		    funnelled = accs.size();
@@ -60,7 +62,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 			}
 		    log.info("Funneling "+(accs.size()-funnelled)+" Zika records...");
 		    funnelled = accs.size();
@@ -69,7 +71,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Ebola records...");
 		    funnelled = accs.size();
@@ -78,7 +80,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Hanta records...");
 		    funnelled = accs.size();
@@ -87,7 +89,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Rabies records...");
 		    funnelled = accs.size();
@@ -96,7 +98,7 @@ public class VirusFunnel {
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.getField("Accession").stringValue());
+		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Flu A records...");
 		    funnelled = accs.size();
@@ -105,7 +107,7 @@ public class VirusFunnel {
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);
-	  	         accs.add(doc.getField("Accession").stringValue());
+	  	         accs.add(doc.get("Accession"));
 	  	    }
 	  	    log.info("Funneling "+(accs.size()-funnelled)+" Flu B records...");
 	  	    funnelled = accs.size();
@@ -114,7 +116,7 @@ public class VirusFunnel {
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);
-	  	         accs.add(doc.getField("Accession").stringValue());
+	  	         accs.add(doc.get("Accession"));
 	  	    }
 	  	    log.info("Funneling "+(accs.size()-funnelled)+" Flu C records...");
 	  	    funnelled = accs.size();
@@ -131,14 +133,12 @@ public class VirusFunnel {
 			throw e;
 		}
 		finally {
-			 if (indexSearcher != null) {
-				try {
-					indexSearcher.close();
-				}
-				catch (IOException e) {
-					log.warning("Could not close Index: "+e.getMessage());
-				}
-			 }
+			if (reader != null) {
+				reader.close();
+			}
+			if (indexDirectory != null) {
+				indexDirectory.close();
+			}
 		}
 	}
 	

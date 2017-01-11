@@ -1,6 +1,8 @@
 package edu.asu.zoophy.genbankfactory.index;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,12 +12,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankRecord;
@@ -29,6 +35,7 @@ import edu.asu.zoophy.genbankfactory.utils.taxonomy.GeoNameTree;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.Node;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
+import jp.ac.toyota_ti.coin.wipefinder.server.utils.PropertiesProvider;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 
 /**
@@ -50,6 +57,7 @@ public class Indexer {
 	private Connection conn = null;
 //	private Corpus corpus = null;
 	private IndexWriter writer = null;
+	private Directory luceneDir = null;
 	private GeneNormalizer gn;
 	
 	private int missingLocs = 0;
@@ -95,20 +103,19 @@ public class Indexer {
     	        }
     	    }
 	    }
-	    createIndex(indexDir);
-	    log.info("start process with index:"+writer.getDirectory());
-	    writer.setMaxFieldLength(50000);
-	    writer.setUseCompoundFile(false);
-	    log.info("Indexer initialized");
+	    createIndex(Paths.get(indexPath));
+	    log.info("Indexer initialized with index at:"+indexPath);
 	}
 	
 	/**
 	 * Open the index in creation mode
 	 * @parameter the file where to create the index
 	 */
-	protected void createIndex(File indexDir) throws IndexerException {
+	protected void createIndex(Path indexDir) throws IndexerException {
     	try {
-        	writer = new IndexWriter(FSDirectory.open(indexDir), new KeywordAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+    		IndexWriterConfig config = new IndexWriterConfig(new KeywordAnalyzer());
+    		luceneDir = FSDirectory.open(indexDir);
+    		writer = new IndexWriter(luceneDir, config);
         	log.info("Creation of a new index.");    		
     	}
     	catch(Exception e) {
@@ -146,31 +153,31 @@ public class Indexer {
 			setDate(record);
 		}
 		else {
-			doc.add(new Field("Date", "10000101", Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new StringField("Date", "10000101", Field.Store.YES));
 		}
 		setHost(record, gbTree);
 		if (record.getGenBankLocation() != null) {
 			setGeographicLocation(record, geoTree);
 		}
 		else {
-			doc.add(new Field("Location", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-			doc.add(new Field("Country", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-			doc.add(new Field("CountryCode", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-			doc.add(new Field("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-			doc.add(new Field("LocationType", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+			doc.add(new StringField("Country", "Unknown", Field.Store.YES));
+			doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
+			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
+			doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
 			unknownLocs++;
 		}
 		if (record.getSequence().getPub() != null) {
-			doc.add(new Field("PubmedID", String.valueOf(record.getSequence().getPub().getPubId()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new StringField("PubmedID", String.valueOf(record.getSequence().getPub().getPubId()), Field.Store.YES));
 		}
 		else {
-			doc.add(new Field("PubmedID", "n/a", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new StringField("PubmedID", "n/a", Field.Store.YES));
 		}
 		return doc;
 	}
 	
 	protected void setAccession(GenBankRecord record) {
-		doc.add(new Field("Accession", record.getAccession(), Field.Store.YES, Field.Index.ANALYZED));		
+		doc.add(new StringField("Accession", record.getAccession(), Field.Store.YES));		
 	}
 	/**
 	 * Insert the organism, strain, and the genes related for the given record
@@ -178,33 +185,33 @@ public class Indexer {
 	 */
 	protected void setOrganism(GenBankRecord record, GenBankTree gbTree) {
 		if (record.getSequence().getOrganism() != null) {
-			doc.add(new Field("Organism", record.getSequence().getOrganism(), Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Organism", record.getSequence().getOrganism(), Field.Store.YES));
 		}
 		else {
-			doc.add(new Field("Organism", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Organism", "Unknown", Field.Store.YES));
 		}
 		if (record.getSequence().getStrain() != null) {
-			doc.add(new Field("Strain", record.getSequence().getStrain(), Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Strain", record.getSequence().getStrain(), Field.Store.YES));
 		}
 		else {
-			doc.add(new Field("Strain", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Strain", "Unknown", Field.Store.YES));
 		}
 		if (record.getSequence().getDefinition() != null) {
-			doc.add(new Field("Definition", record.getSequence().getDefinition(), Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Definition", record.getSequence().getDefinition(), Field.Store.YES));
 		}
 		else {
-			doc.add(new Field("Definition", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Definition", "Unknown", Field.Store.YES));
 		}
-		doc.add(new Field("SegmentLength", String.valueOf(record.getSequence().getSegment_length()),Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new StringField("SegmentLength", String.valueOf(record.getSequence().getSegment_length()),Field.Store.YES));
 		//add gene info//
 		if (record.getGenes() != null) {
 			for (Gene g : record.getGenes()) {
 				if (g.getName() != null) {
 					if (g.getName().equalsIgnoreCase("complete")) {
-						doc.add(new Field("Gene", "Complete", Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new StringField("Gene", "Complete", Field.Store.YES));
 					}
 					else {
-						doc.add(new Field("Gene", g.getName(), Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new StringField("Gene", g.getName(), Field.Store.YES));
 					}
 				}
 			}
@@ -212,7 +219,7 @@ public class Indexer {
 		}
 		//add taxon info//
 		if (record.getSequence().getTax_id() <= 1) {
-			doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 		}
 		else {
 			try {
@@ -221,30 +228,30 @@ public class Indexer {
 					String cpts = node.getConcept();
 					if (cpts.contains(" | ")) {
 						for(String cpt: cpts.split(" \\| ")) {
-							doc.add(new Field("TaxonID", cpt, Field.Store.YES, Field.Index.ANALYZED));
+							doc.add(new StringField("TaxonID", cpt, Field.Store.YES));
 						}
 					}
 					else {
-						doc.add(new Field("TaxonID", cpts, Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new StringField("TaxonID", cpts, Field.Store.YES));
 					}
-					doc.add(new Field("TaxonID", node.getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					doc.add(new StringField("TaxonID", node.getID().toString(), Field.Store.YES));
 					List<Node> ancestors = node.getAncestors();
 					for (Node ancestor: ancestors) {
-						doc.add(new Field("TaxonID", ancestor.getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+						doc.add(new StringField("TaxonID", ancestor.getID().toString(), Field.Store.YES));
 					}
 				}
 				else {
-					doc.add(new Field("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-					doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					doc.add(new StringField("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES));
+					doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 				}
 			}
 			catch (Exception e) {
 				log.log(Level.SEVERE, "Error indexing taxonomy for taxon: " + record.getSequence().getTax_id());
-				doc.add(new Field("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-				doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new StringField("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES));
+				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 			}
 		}
-		doc.add(new Field("PH1N1", String.valueOf(record.getSequence().isPH1N1()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new StringField("PH1N1", String.valueOf(record.getSequence().isPH1N1()), Field.Store.YES));
 	}
 	
 	private void checkForFullGenome(GenBankRecord record) {
@@ -255,7 +262,7 @@ public class Indexer {
 			}
 			List<String> fullGenome = gn.getFullGenomeList(record.getSequence().getTax_id());
 			if (fullGenome != null && (genes.containsAll(fullGenome) || genes.contains("Complete"))) {
-				doc.add(new Field("Gene", "Complete", Field.Store.YES, Field.Index.ANALYZED));
+				doc.add(new StringField("Gene", "Complete", Field.Store.YES));
 			}
 		}
 		catch (Exception e) {
@@ -268,13 +275,13 @@ public class Indexer {
 	 */
 	protected void setHost(GenBankRecord record, GenBankTree gbTree) {
 		if (record.getHost().getName() != null) {
-			doc.add(new Field("Host_Name", record.getHost().getName(), Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Host_Name", record.getHost().getName().toLowerCase(), Field.Store.YES));
 		}
 		else {
-			doc.add(new Field("Host_Name", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+			doc.add(new TextField("Host_Name", "Unknown".toLowerCase(), Field.Store.YES));
 		}
 		if (record.getHost().getTaxon() <= 1 || record.getHost().getName() == null) {
-			doc.add(new Field("HostID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new StringField("HostID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 		}
 		else {
 			try { 
@@ -283,27 +290,27 @@ public class Indexer {
 					String cpts = gbTree.getNode(record.getHost().getTaxon()).getConcept();
 					if(cpts.contains(" | ")) {
 						for(String cpt: cpts.split(" \\| ")) {
-							doc.add(new Field("Host", cpt, Field.Store.YES, Field.Index.ANALYZED));
+							doc.add(new TextField("Host", cpt.toLowerCase(), Field.Store.YES));
 						}
 					}
 					else {
-						doc.add(new Field("Host", cpts, Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Host", cpts.toLowerCase(), Field.Store.YES));
 					}
-					doc.add(new Field("HostID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					doc.add(new StringField("HostID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
 					List<Node> ancestors = node.getAncestors();
 					for(Node ancestor: ancestors) {
-						doc.add(new Field("HostID", ancestor.getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+						doc.add(new StringField("HostID", ancestor.getID().toString(), Field.Store.YES));
 					}
 				}
 				else {
-					doc.add(new Field("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-					doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					doc.add(new StringField("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
+					doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 				}
 			}
 			catch (Exception e) { 
 				log.log(Level.SEVERE, "Error indexing taxonomy for host taxon: " + record.getHost().getTaxon());
-				doc.add(new Field("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-				doc.add(new Field("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new StringField("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
+				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 			}
 		}
 	}
@@ -363,17 +370,17 @@ public class Indexer {
 				}
 				if (g != null) {
 					if (g.getConcept() != null) {
-						doc.add(new Field("Location", g.getConcept(), Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Location", g.getConcept(), Field.Store.YES));
 					}
 					else {
-						doc.add(new Field("Location", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Location", "Unknown", Field.Store.YES));
 					}
 					if (g.getLocation() != null) {
 						country_code = g.getLocation().getCountry();
-						doc.add(new Field("Latitude", String.valueOf(g.getLocation().getLatitude()), Field.Store.YES, Field.Index.NOT_ANALYZED));
-						doc.add(new Field("Longitude", String.valueOf(g.getLocation().getLongitude()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+						doc.add(new StringField("Latitude", String.valueOf(g.getLocation().getLatitude()), Field.Store.YES));
+						doc.add(new StringField("Longitude", String.valueOf(g.getLocation().getLongitude()), Field.Store.YES));
 						if (g.getLocation().getType() != null) {
-							doc.add(new Field("LocationType", g.getLocation().getType(), Field.Store.YES, Field.Index.ANALYZED));
+							doc.add(new StringField("LocationType", g.getLocation().getType(), Field.Store.YES));
 							if(record.getGenBankLocation().getType() == null) {
 								List<Object> params = new LinkedList<Object>();
 								params.add(g.getLocation().getType());
@@ -383,13 +390,13 @@ public class Indexer {
 							}
 						}
 						else {
-							doc.add(new Field("LocationType", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+							doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
 						}
 					}
 					else {
-						doc.add(new Field("Latitude", String.valueOf(0.0), Field.Store.YES, Field.Index.NOT_ANALYZED));
-						doc.add(new Field("Longitude", String.valueOf(0.0), Field.Store.YES, Field.Index.NOT_ANALYZED));
-						doc.add(new Field("LocationType", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new StringField("Latitude", String.valueOf(0.0), Field.Store.YES));
+						doc.add(new StringField("Longitude", String.valueOf(0.0), Field.Store.YES));
+						doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
 					}
 					if (g != (GeoNameNode) geoTree.getRoot() && g.getFather() == null) {
 						g.setFather((GeoNameNode) geoTree.getRoot());
@@ -430,12 +437,12 @@ public class Indexer {
 							else {
 								log.log(Level.SEVERE, "Error loop Found for GeonameID: "+g.getID());
 								g = null;
-								doc.add(new Field("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+								doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 							}
 						}
 						else {
 							visitedPlaces.add(g.getID());
-							doc.add(new Field("GeonameID", String.valueOf(g.getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+							doc.add(new StringField("GeonameID", String.valueOf(g.getID()), Field.Store.YES));
 							if (country_code == null) {
 								if (g.getLocation() != null) {
 									country_code = g.getLocation().getCountry();
@@ -447,22 +454,22 @@ public class Indexer {
 				}
 				else {
 					if (record.getGenBankLocation().getLocation() != null) {
-						doc.add(new Field("Location", record.getGenBankLocation().getLocation(), Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Location", record.getGenBankLocation().getLocation(), Field.Store.YES));
 					}
 					else {
-						doc.add(new Field("Location", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Location", "Unknown", Field.Store.YES));
 					}
-					doc.add(new Field("GeonameID", String.valueOf(id), Field.Store.YES, Field.Index.NOT_ANALYZED));
-					doc.add(new Field("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					doc.add(new StringField("GeonameID", String.valueOf(id), Field.Store.YES));
+					doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 				}
 				visitedPlaces.clear();
 				if (country_code == null) {
-					doc.add(new Field("Country", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+					doc.add(new TextField("Country", "Unknown", Field.Store.YES));
 				}
 				else {
 					try {
 						String country_name = SimplifyCountry(geoTree.getMapIDNodes().get(geoTree.getCountryLookup().get(country_code)).getConcept());
-						doc.add(new Field("Country", country_name, Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Country", country_name, Field.Store.YES));
 						if (record.getGenBankLocation().getCountry() == null) {
 							List<Object> params = new LinkedList<Object>();
 							params.add(country_name);
@@ -473,28 +480,28 @@ public class Indexer {
 					}
 					catch (Exception e) {
 						log.log(Level.SEVERE, "ERROR setting country name for country code: "+country_code);
-						doc.add(new Field("Country", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+						doc.add(new TextField("Country", "Unknown", Field.Store.YES));
 					}
-					doc.add(new Field("CountryCode", country_code, Field.Store.YES, Field.Index.ANALYZED));
+					doc.add(new StringField("CountryCode", country_code, Field.Store.YES));
 				}
 			}
 			else {
 				if (record.getGenBankLocation().getLocation() != null) {
-					doc.add(new Field("Location", record.getGenBankLocation().getLocation(), Field.Store.YES, Field.Index.ANALYZED));
+					doc.add(new TextField("Location", record.getGenBankLocation().getLocation(), Field.Store.YES));
 				}
 				else {
-					doc.add(new Field("Location", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
+					doc.add(new TextField("Location", "Unknown", Field.Store.YES));
 				}
-				doc.add(new Field("CountryCode", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-				doc.add(new Field("Country", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-				doc.add(new Field("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
+				doc.add(new TextField("Country", "Unknown", Field.Store.YES));
+				doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 			}
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error indexing location for Geoname id: " + id + " " + e.getMessage());
-			doc.add(new Field("Location", "Unknown", Field.Store.YES, Field.Index.ANALYZED));
-			doc.add(new Field("GeonameID", String.valueOf(id), Field.Store.YES, Field.Index.NOT_ANALYZED));
-			doc.add(new Field("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+			doc.add(new StringField("GeonameID", String.valueOf(id), Field.Store.YES));
+			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 		}
 	}
 	
@@ -567,7 +574,7 @@ public class Indexer {
 	 * @throws IndexerException
 	 */
 	protected void setDate(GenBankRecord record) {
-		doc.add(new Field("Date", formatDate(record), Field.Store.YES, Field.Index.ANALYZED));
+		doc.add(new StringField("Date", formatDate(record), Field.Store.YES));
 	}
 	/**
 	 * Format the date in Lucene format,
@@ -662,9 +669,8 @@ public class Indexer {
 	public void Close() {
 		try {
 		    log.info(writer.maxDoc()+" documents indexed.");
-		    writer.optimize();
-		    log.info("Index optimization completed.");
 		    writer.close();
+		    luceneDir.close();
 		    log.info("Index closed successfully.");
 		}
 		catch (Exception e) {
@@ -758,16 +764,16 @@ public class Indexer {
 		}
 		finally {
 			try {
-				if (rs!=null) {
+				if (rs != null) {
 					rs.close();
 				}
-				if (stm!=null) {
+				if (stm != null) {
 					stm.close();
 				}
 				this.Close();
 			}
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
+				log.log(Level.SEVERE, "ERROR could not close SQL resource(s): "+e.getMessage());
 			}
 			log.info("Total Missing Locations: "+missingLocs);
 			log.info("Country Mapped Locations: "+countryMappedLocs);
