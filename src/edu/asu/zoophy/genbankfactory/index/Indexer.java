@@ -160,7 +160,7 @@ public class Indexer {
 			setGeographicLocation(record, geoTree);
 		}
 		else {
-			doc.add(new StringField("Location", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Location", "Unknown", Field.Store.YES));
 			doc.add(new StringField("Country", "Unknown", Field.Store.YES));
 			doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
@@ -490,7 +490,7 @@ public class Indexer {
 					doc.add(new TextField("Location", record.getGenBankLocation().getLocation(), Field.Store.YES));
 				}
 				else {
-					doc.add(new StringField("Location", "Unknown", Field.Store.YES));
+					doc.add(new TextField("Location", "Unknown", Field.Store.YES));
 				}
 				doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
 				doc.add(new TextField("Country", "Unknown", Field.Store.YES));

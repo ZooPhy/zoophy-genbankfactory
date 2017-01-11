@@ -136,6 +136,9 @@ public class VirusFunnel {
 			if (reader != null) {
 				reader.close();
 			}
+			if (indexDirectory != null) {
+				indexDirectory.close();
+			}
 		}
 	}
 	
