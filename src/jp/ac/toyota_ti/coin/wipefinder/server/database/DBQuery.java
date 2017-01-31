@@ -188,6 +188,8 @@ public class DBQuery
 							
 					}else if (param instanceof java.sql.Array){
 						pstmt.setArray(i+1, ((Array) param));
+					}else if (param instanceof java.lang.Boolean) {
+						pstmt.setBoolean(i+1, (Boolean) param);
 				}else 
 				{
 					log.log(Level.SEVERE, "Parameter's class is unexpected: "+param.getClass().toString());
