@@ -1,6 +1,7 @@
 package edu.asu.zoophy.genbankfactory;
 
 import java.io.File;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -185,6 +186,9 @@ public class Main {
 		}
 		try {
 			ProcessBuilder pb = new ProcessBuilder("java", "-Xmx4G", "-Xms1G", "-jar", updaterDir+"gbmetadataupdater.jar").inheritIO().directory(updaterFolder);
+			File geonameUpdaterLog = new File("gb_updater.log");
+			pb.redirectOutput(Redirect.appendTo(geonameUpdaterLog));
+			pb.redirectError(Redirect.appendTo(geonameUpdaterLog));
 			log.info("Starting Process: "+pb.command().toString());
 			Process pr = pb.start();
 			pr.waitFor();

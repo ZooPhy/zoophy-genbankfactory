@@ -129,11 +129,11 @@ public class HostAligner implements HostNormalizer {
 				if (ID == null) {
 					//not find in the direct mapping, try to match exactly to an entry in the taxonomy which is not ambiguous
 					IDs = nameToID.get(name.toLowerCase());
-					if(IDs == null) {//first we try with rules
+					if (IDs == null) {//first we try with rules
 						ID = applyMappingRules(name, accession);
-						if(ID == null) { //still not, last try with the head to target mother concept
+						if (ID == null) { //still not, last try with the head to target mother concept
 							ID = getHeadID(name, accession);
-							if(ID == null) {
+							if (ID == null || ID.intValue() == 1) {
 								log.warning("Impossible to find host ID for the accession ["+accession+"] name ["+name+"] (not in the map)");
 								ID = 1;
 							}
@@ -163,7 +163,7 @@ public class HostAligner implements HostNormalizer {
 			throw new Exception("Other problem when retrieving the host name in the host table: "+e.getMessage());
 		}
 		finally {
-			if(rs!=null) {
+			if (rs!=null) {
 				try {
 					rs.close();
 				} 
@@ -171,7 +171,7 @@ public class HostAligner implements HostNormalizer {
 					log.warning("Impossible to close the ResultSet: "+e.getMessage());
 				}
 			}
-			if(pull_hosts_query!=null) {
+			if (pull_hosts_query!=null) {
 				pull_hosts_query.close();
 			}
 		}
@@ -193,12 +193,12 @@ public class HostAligner implements HostNormalizer {
 				updatHostQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, UPDATE_HOST_ID);
 				batch_count = 0;
 			}
-			//log.info("Processed: " + accession);
 		}
 		catch(Exception e) {
 			log.log(Level.SEVERE, "ERROR running update host batch: " + e.getMessage());
 		}
 	}
+	
 	/**
 	 * Some host field contain virus strains which contain the host name,
 	 * we filter such cases to  
@@ -207,7 +207,7 @@ public class HostAligner implements HostNormalizer {
 	 * @throws Exception
 	 */
 	protected String filterVirusHost(String name, String Accession) throws Exception {
-		if(name.toLowerCase().contains("virus") && name.contains("/")) {
+		if (name.toLowerCase().contains("virus") && name.contains("/")) {
 			StringBuilder msg = new StringBuilder();
 			msg.append("=> Found a virus strain in the host field [");
 			msg.append(name);
@@ -215,7 +215,7 @@ public class HostAligner implements HostNormalizer {
 			int firstS = name.indexOf("/");
 			int secondS = name.substring(firstS+1).indexOf("/");
 			//we accept the new name only if it doesn't start with an upper case, to disambiguate with the country/city names
-			if(!(name.substring(firstS+1).matches("[A-Z].+"))) {
+			if (!(name.substring(firstS+1).matches("[A-Z].+"))) {
 				name = name.substring(firstS+1, (secondS+firstS+1));
 			}
 			else {//it's probably a human by default
@@ -229,6 +229,7 @@ public class HostAligner implements HostNormalizer {
 		}
 		return name;
 	}
+	
 	/**
 	 * I apply direct mapping rules for the entries of this small DB on virus
 	 * @param hostName
@@ -237,83 +238,83 @@ public class HostAligner implements HostNormalizer {
 	 * @throws Exception
 	 */
 	protected Integer applyDirectMapping(String hostName, String Accession) throws Exception {
-		if(hostName.equalsIgnoreCase("udorn")) {
+		if (hostName.equalsIgnoreCase("udorn")) {
 			//log.info("=> found \"udorn\" replaced by [homo sapiens (ID: 9606)] concept for accession ["+Accession+"]");
-				return new Integer(8910);
+				return new Integer(9606);
 		}
-		if(hostName.equalsIgnoreCase("nt")) {
+		if (hostName.equalsIgnoreCase("nt")) {
 			//log.info("=> found \"nt\" replaced by [homo sapiens (ID: 9606)] concept for accession ["+Accession+"]");
-				return new Integer(8910);
+				return new Integer(9606);
 		}
-		if(hostName.equalsIgnoreCase("gull")||hostName.equalsIgnoreCase("gulls")) {
+		if (hostName.equalsIgnoreCase("gull")||hostName.equalsIgnoreCase("gulls")) {
 			//log.info("=> found \"gull\" replaced by [gulls (ID: 8910)] concept for accession ["+Accession+"]");
 				return new Integer(8910);
 		}
-		if(hostName.equalsIgnoreCase("environment")) {
+		if (hostName.equalsIgnoreCase("environment")) {
 			return new Integer(12908);//unclassified sequences
 		}
-		if(hostName.equalsIgnoreCase("silky chicken")) {
+		if (hostName.equalsIgnoreCase("silky chicken")) {
 			//log.info("=> found \"silky chicken\" replaced by [Chicken (ID:9031)] concept for accession ["+Accession+"]");
 			return new Integer(9031);
 		}
-		if(hostName.equalsIgnoreCase("mink")) {
+		if (hostName.equalsIgnoreCase("mink")) {
 			//log.info("=> found \"mink\" replaced by [Mustelidae (ID:9655)] concept for accession ["+Accession+"]");
 			return new Integer(9655);
 		}
-		if(hostName.equalsIgnoreCase("teal")) {
+		if (hostName.equalsIgnoreCase("teal")) {
 			//log.info("=> found \"teal\" replaced by [green-winged teal] concept for accession ["+Accession+"]");
 			Set<Integer> ids = nameToID.get("green-winged teal");
-			if(ids!=null){
+			if (ids!=null) {
 				return checkMultipleValues("green-winged teal", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("pheasant")) {
+		if (hostName.equalsIgnoreCase("pheasant")) {
 			Set<Integer> ids = nameToID.get("phasianinae");
-			if(ids!=null){
+			if (ids!=null) {
 				return checkMultipleValues("phasianinae", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("partridge")) {
+		if (hostName.equalsIgnoreCase("partridge")) {
 			Set<Integer> ids = nameToID.get("phasianidae");
-			if(ids!=null) {
+			if (ids!=null) {
 				return checkMultipleValues("phasianidae", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("condor")) {
+		if (hostName.equalsIgnoreCase("condor")) {
 			//log.info("=> found \"condor\" replaced by [vultur] concept for accession ["+Accession+"]");
 			Set<Integer> ids = nameToID.get("vultur");
-			if(ids!=null){
+			if (ids!=null) {
 				return checkMultipleValues("vultur", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("guinea fowl")) {
+		if (hostName.equalsIgnoreCase("guinea fowl")) {
 			Set<Integer> ids = nameToID.get("guineafowls");
-			if(ids!=null){
+			if (ids!=null) {
 				return checkMultipleValues("guineafowls", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("chukkar")) {
+		if (hostName.equalsIgnoreCase("chukkar")) {
 			Set<Integer> ids = nameToID.get("chukar partridge");
-			if(ids!=null) {
+			if (ids!=null) {
 				return checkMultipleValues("chukar partridge", ids, Accession);
 			}
 		}
-		if(hostName.equalsIgnoreCase("banana")) {
+		if (hostName.equalsIgnoreCase("banana")) {
 				return new Integer(4641);
 		}
-		if(hostName.equalsIgnoreCase("camel")) {
+		if (hostName.equalsIgnoreCase("camel")) {
 				return new Integer(9836);
 		}
-		if(hostName.equalsIgnoreCase("sugarcane")) {
+		if (hostName.equalsIgnoreCase("sugarcane")) {
 				return new Integer(286192);
 		}
-		if(hostName.equalsIgnoreCase("puma")) {
+		if (hostName.equalsIgnoreCase("puma")) {
 				return new Integer(146712);
 		}
-		if(hostName.equalsIgnoreCase("mouse")) {
+		if (hostName.equalsIgnoreCase("mouse")) {
 				return new Integer(10088);
 		}
-		if(hostName.equalsIgnoreCase("barley")) {
+		if (hostName.equalsIgnoreCase("barley")) {
 				return new Integer(4513);
 		}
 		return null;
@@ -327,12 +328,12 @@ public class HostAligner implements HostNormalizer {
 	protected Integer getHeadID(String name, String Accession) throws Exception {
 		StringTokenizer tkr = new StringTokenizer(name);
 		String head = null;
-		while(tkr.hasMoreTokens()) {
+		while (tkr.hasMoreTokens()) {
 			head = tkr.nextToken();
 		}
 		Set<Integer> headIDs = nameToID.get(head);
 		if (headIDs != null && headIDs.size() > 0) {
-			if(headIDs.size()==1) {
+			if (headIDs.size()==1) {
 				return headIDs.iterator().next();
 			}
 			else {
@@ -350,69 +351,70 @@ public class HostAligner implements HostNormalizer {
 	 * @return the ID of the host name, null otherwise
 	 */
 	protected Integer applyMappingRules(String hostName, String Accession) throws Exception {
-		if(hostName.startsWith("\"") && hostName.endsWith("\""))
+		if (hostName.startsWith("\"") && hostName.endsWith("\"")) {
 			hostName = hostName.substring(1,hostName.length()-1);
+		}
 		//a lot of accessions are about human with various information:
 		//human; gender M; age 25
 		//Homo sapiens; female; 54 years
 		//one quick win is to search the key word
 		Matcher m = pHUMAN.matcher(hostName);
-		if(m.find()) {
+		if (m.find()) {
 			Set<Integer> ids = nameToID.get("homo sapiens");
-			if(ids.size() > 1) {
+			if (ids.size() > 1) {
 				return checkMultipleValues("homo sapiens", ids, Accession);
 			}
-			return ids.iterator().next(); 
+			return ids.iterator().next();
 		}
 		//some start with domestic something, we remove domestic and search again in the map
-		if(hostName.startsWith("domestic ")||hostName.startsWith("Domestic ")) {
+		if (hostName.startsWith("domestic ")||hostName.startsWith("Domestic ")) {
 			Set<Integer> ids = nameToID.get(hostName.substring(9).toLowerCase());
-			if(ids!=null) {
+			if (ids!=null) {
 				//log.info("=> \"domestic\" was found in front of the host name ["+hostName+"], we removed it for accession ["+Accession+"].");
 				return checkMultipleValues(hostName.substring(9).toLowerCase(), ids, Accession);
 			}
 		}
-		if(hostName.contains("(") && hostName.contains(")")) {//case like : spur-winged goose (Plectropterus gambensis) or white-faced whistling duck (Dendrocygna viduata) 
+		if (hostName.contains("(") && hostName.contains(")")) {//case like : spur-winged goose (Plectropterus gambensis) or white-faced whistling duck (Dendrocygna viduata) 
 			int posFirstParenthesis = hostName.indexOf('(');
 			int posLastParenthesis = hostName.lastIndexOf(")");
 			if (posFirstParenthesis > 2 && (posFirstParenthesis < posLastParenthesis)) {
 				Set<Integer> ids = nameToID.get(hostName.substring(0, posFirstParenthesis-1).toLowerCase());
-				if(ids!=null) {
+				if (ids!=null) {
 					return checkMultipleValues(hostName.substring(0, posFirstParenthesis-1).toLowerCase(), ids, Accession);
 				}
 				//we try with the name in the parenthesis
 				ids = nameToID.get(hostName.substring(posFirstParenthesis+1, posLastParenthesis).toLowerCase());
-				if(ids!=null) {
+				if (ids!=null) {
 					return checkMultipleValues(hostName.substring(posFirstParenthesis+1, posLastParenthesis).toLowerCase(), ids, Accession);
 				}
 			}
 		}
-		if(hostName.contains(",")) {//cases like Gallus gallus, chicken
+		if (hostName.contains(",")) {//cases like Gallus gallus, chicken
 			int posComma = hostName.indexOf(",");
 			if (posComma > 2) {
 				Set<Integer> ids = nameToID.get(hostName.substring(0,posComma).toLowerCase());
-				if(ids != null) {
+				if (ids != null) {
 					return checkMultipleValues(hostName.substring(0,posComma).toLowerCase(), ids, Accession);
 				}
 				ids = nameToID.get(hostName.substring(posComma+2).toLowerCase());
-				if(ids != null) {
+				if (ids != null) {
 					return checkMultipleValues(hostName.substring(posComma+2).toLowerCase(), ids, Accession);
 				}
 			}
 		}
-		if(hostName.contains(";")){//cases like swine; gender M; age 6 W
+		if (hostName.contains(";")) {//cases like swine; gender M; age 6 W
 			int posComma = hostName.indexOf(";");
-			if(posComma>2){
+			if (posComma>2) {
 				Set<Integer> ids = nameToID.get(hostName.substring(0,posComma).toLowerCase());
-				if(ids!=null) {
+				if (ids!=null) {
 					return checkMultipleValues(hostName.substring(0,posComma).toLowerCase(), ids, Accession);
 				}
 			}
 		}
 		//some are plural forms and no singular like gulls
-		if(!hostName.endsWith("s")) {
+		if (!hostName.endsWith("s")) {
 			Set<Integer> ids = nameToID.get(hostName+"s");
-			if(ids!=null) {
+			if (ids!=null) {
 				return checkMultipleValues(hostName+"s", ids, Accession);
 			}
 		}
