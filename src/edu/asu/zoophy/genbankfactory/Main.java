@@ -25,11 +25,11 @@ import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider.RP_PROVIDED
  * @author demetri
  */
 public class Main {
-	
+
 	private static GenBankRecordDAOInt dao;
 	private static String filter = null;
 	private static Logger log = Logger.getLogger("Main");
-	
+
 	public static void main(String[] args) {
 		try {
 			GenBankFactory gbFact;

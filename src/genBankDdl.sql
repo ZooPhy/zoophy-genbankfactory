@@ -1,5 +1,5 @@
 CREATE TABLE "Sequence_Details" (
-  "Accession" text NOT NULL,
+  "Accession" character varying(15) NOT NULL,
   "Definition" text,
   "Tax_ID" integer,
   "Organism" text NOT NULL,
@@ -17,7 +17,7 @@ WITH (
 );
 
 CREATE TABLE "Publication" (
-  "Pub_ID" bigserial NOT NULL,
+  "Pub_ID" serial NOT NULL,
   "Pubmed_ID" integer NOT NULL,
   "Pubmed_Central_ID" text,
   "Authors" text NOT NULL,
@@ -31,7 +31,7 @@ WITH (
 );
 
 CREATE TABLE "Host" (
-  "Accession" text,
+  "Accession" character varying(15),
   "Host_Name" text, 
   "Host_taxon" integer, 
   CONSTRAINT "HostAccession_FKey" FOREIGN KEY ("Accession")
@@ -47,7 +47,7 @@ CREATE INDEX host_accession_index
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Sequence" (
-  "Accession" text,
+  "Accession" character varying(15),
   "Sequence" text NOT NULL,
   "Segment_Length" integer NOT NULL, 
   CONSTRAINT "SeqAccession_FKey" FOREIGN KEY ("Accession")
@@ -63,7 +63,7 @@ CREATE INDEX sequence_long_accession_index
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Sequence_Publication" (
-  "Accession" text,
+  "Accession" character varying(15),
   "Pub_ID" integer,
   CONSTRAINT "PubAccession_FKey" FOREIGN KEY ("Accession")
       REFERENCES "Sequence_Details" ("Accession") MATCH SIMPLE
@@ -85,7 +85,7 @@ CREATE INDEX "index_accession"
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Location_GenBank" (
-  "Accession" text,
+  "Accession" character varying(15),
   "Location" text, 
   "Latitude" real,
   "Longitude" real,
@@ -102,10 +102,10 @@ CREATE INDEX "locGB_accession_index"
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Gene" (
-  "Gene_ID" bigserial NOT NULL,
-  "Accession" text NOT NULL,
+  "Gene_ID" serial NOT NULL,
+  "Accession" character varying(15) NOT NULL,
   "Gene_Name" text NOT NULL,
-  "Normalized_Gene_Name" text,
+  "Normalized_Gene_Name" character varying(15),
   "Itv" text NOT NULL,
   CONSTRAINT "Gene_ID_PKEY" PRIMARY KEY ("Gene_ID"),
   CONSTRAINT "GeneAccession_FKey" FOREIGN KEY ("Accession")
@@ -121,8 +121,8 @@ CREATE INDEX "gene_accessionIndex"
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Features" (
-  "Feature_ID" bigserial NOT NULL,
-  "Accession" text,
+  "Feature_ID" serial NOT NULL,
+  "Accession" character varying(15),
   "Header" text NOT NULL,
   "Position" text NOT NULL,
   "Key" text,
@@ -141,7 +141,7 @@ CREATE INDEX accession_feature_index
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Location_Geoname" (
-  "Accession" text NOT NULL,
+  "Accession" character varying(15) NOT NULL,
   "Geoname_ID" integer,
   "Location" text, 
   "Latitude" real,
@@ -162,13 +162,13 @@ CREATE INDEX geoname_accession_index
 
 CREATE TABLE "Possible_Location"
 (
-  "Id" bigserial NOT NULL,
-  "Accession" text,
+  "Id" serial NOT NULL,
+  "Accession" character varying(15),
   "Geoname_ID" integer,
   "Location" text,
   "Latitude" real,
   "Longitude" real,
-  probability double precision,
+  probability real precision,
   CONSTRAINT "PK_Id" PRIMARY KEY ("Id")
 )
 WITH (
@@ -180,7 +180,7 @@ CREATE INDEX "possLoc_accession_index"
   ("Accession" COLLATE pg_catalog."default");
 
 CREATE TABLE "Taxonomy_Concept" (
-  node_id bigint,
+  node_id integer,
   name text,
   unique_name text,
   class text
@@ -190,7 +190,7 @@ WITH (
 );
 
 CREATE TABLE "Taxonomy_Division" (
-  division_id bigint,
+  division_id integer,
   code text,
   name text
 )
@@ -199,11 +199,11 @@ WITH (
 );
 
 CREATE TABLE "Taxonomy_Tree" (
-  node_id bigint,
-  parent_node_id bigint,
+  node_id integer,
+  parent_node_id integer,
   rank text,
   code text,
-  division bigint
+  division integer
 )
 WITH (
   OIDS=FALSE
@@ -211,7 +211,7 @@ WITH (
 
 CREATE TABLE "Predictor"
 (
-  id bigserial NOT NULL,
+  id serial NOT NULL,
   "USPS_code" text NOT NULL,
   "State" text NOT NULL,
   "Key" text NOT NULL,
