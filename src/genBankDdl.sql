@@ -168,7 +168,7 @@ CREATE TABLE "Possible_Location"
   "Location" text,
   "Latitude" real,
   "Longitude" real,
-  probability real precision,
+  probability real,
   CONSTRAINT "PK_Id" PRIMARY KEY ("Id")
 )
 WITH (
