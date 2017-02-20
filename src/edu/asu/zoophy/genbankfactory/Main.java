@@ -13,6 +13,7 @@ import edu.asu.zoophy.genbankfactory.index.Indexer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.date.DateNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.GeneNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.pH1N1.PH1N1Inserter;
+import edu.asu.zoophy.genbankfactory.utils.predictor.PredictorInserter;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostAligner;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.TaxonomyInserter;
@@ -35,6 +36,7 @@ public class Main {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
+	    		PredictorInserter.insertData();
 	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    	}
 	    	else if (args[0].equalsIgnoreCase("help")) {
@@ -74,6 +76,7 @@ public class Main {
 					TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 					taxo.insertTaxo();
+					PredictorInserter.insertData();
 				}
 				else {
 					throw new Exception("Invalid command line arguments! Use \"help\" for jar argument instructions.");

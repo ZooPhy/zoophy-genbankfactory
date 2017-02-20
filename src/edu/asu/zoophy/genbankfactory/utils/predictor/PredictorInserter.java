@@ -15,7 +15,7 @@ import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 
 public class PredictorInserter {
-	@SuppressWarnings("unused")
+	
 	private static GenBankFactory fact;
 	private static final Logger log = Logger.getLogger("PredictorInserter");
 	private static final String INSERT_PREDICTORS = "INSERT INTO \"Predictor\" (\"USPS_code\",\"State\",\"Key\",\"Value\",\"Year\") VALUES (?,?,?,?,?)";
@@ -27,11 +27,11 @@ public class PredictorInserter {
 	private static List<List<String>> statePredictors;
 	private static String csvDelimeter = ",";
 	
-	///home/devdemetri/Documents/predictors.csv
-	public static void insertData(String path) throws Exception {
+	public static void insertData() throws Exception {
 		try {
-			log.info("Starting Predictor Insertion process with file: "+path);
 			fact = GenBankFactory.getInstance();
+			String path = fact.getProperty("predictor.csv");
+			log.info("Starting Predictor Insertion process with file: "+path);
 			statePredictors = new LinkedList<List<String>>();
 			String line = "";
 			log.info("reading csv file...");
