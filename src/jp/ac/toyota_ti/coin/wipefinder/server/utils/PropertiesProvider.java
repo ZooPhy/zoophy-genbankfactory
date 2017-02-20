@@ -45,7 +45,7 @@ public class PropertiesProvider {
 	}
 	/**
 	 * Read a file which contains the properties. Other values maybe include in the constructor.
-	 * @param String Name of the properties File
+	 * @param namePropertiesFile String Name of the properties File
 	 * @throws Exception
 	 */
 	public PropertiesProvider(String namePropertiesFile) throws Exception

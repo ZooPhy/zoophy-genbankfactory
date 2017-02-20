@@ -441,7 +441,7 @@ public class GenBankFactory {
 	/**
 	 * Read the file and create a GenBankRecord object before inserting it
 	 * @param filename
-	 * @return 
+	 * @return records proccessed from the given file
 	 */
 	public ArrayList<GenBankRecord> processFile(String filename) {
 		ArrayList<GenBankRecord> processedRecords = null;

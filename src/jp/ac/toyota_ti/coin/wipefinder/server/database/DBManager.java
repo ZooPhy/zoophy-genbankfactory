@@ -22,7 +22,6 @@ public class DBManager {
 	private Connection c = null; 
 	/**
 	 * Create a Connection to the Database, where the details are provided by the properties provider open in the Dataprovider
-	 * @param namePropertieProvider the name of the properties provider in the DataProvider
 	 * @throws Exception
 	 */
 	public DBManager() throws Exception {

@@ -128,9 +128,10 @@ public class ResourceProvider
 	}
 	/**
 	 * Add a new provided resources to the {@link ResourceProvider}
-	 * If an new DBI is added while a DBI is already registered nothing is done (use {@link #removeResource(Enum, Object)} before)
+	 * If an new DBI is added while a DBI is already registered nothing is done (use {@link #removeResource(Enum<RP_PROVIDED_RESOURCES> pProvidedResource)} before)
 	 * If an new PropertiesProvider is added while a PropertiesProvider is already registered we merge the values (if an existing properties have the same name, the first one is kept)
-	 * @param resourceName
+	 * @param pProvidedResource type of resource being provided
+	 * @param resource - resource to add
 	 * @return the resource added
 	 */
 	static public Object addResource(Enum<RP_PROVIDED_RESOURCES> pProvidedResource, Object resource)
@@ -156,8 +157,7 @@ public class ResourceProvider
 	}
 	/**
 	 * Remove a resource from the provider, nothing done if the resource doesn't exist
-	 * @param pProvidedResource
-	 * @param resource
+	 * @param pProvidedResource - resource to remove
 	 * @return the resource removed, null if it doesn't exist
 	 */
 	static public Object removeResource(Enum<RP_PROVIDED_RESOURCES> pProvidedResource)

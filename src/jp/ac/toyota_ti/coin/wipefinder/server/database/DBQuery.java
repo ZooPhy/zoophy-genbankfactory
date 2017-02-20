@@ -54,7 +54,7 @@ public class DBQuery
 		/**
 		 * Creation of a query object requires a DBHelper which supplies the connection, 
 		 * the text of a query, and a list of query parameters.
-		 * @param the type of the query SQL (define as class constants)
+		 * @param pQueryType the type of the query SQL (define as class constants)
 		 * @param query The SQL query to execute.
 		 * @param params A List of Objects, each of which should at runtime be one of
 		 *  
@@ -89,8 +89,8 @@ public class DBQuery
 		}
 		/**
 		 * Creation of a query object for a Batched operation, requires a DBHelper which supplies the connection, 
-		 * the text of a query, the list of query parameters are added by the {@link #addBatch()}.
-		 * @param the type of the query SQL (define as class constants)
+		 * the text of a query, the list of query parameters are added by the {@link #addBatch(List Params)}.
+		 * @param pQueryType the type of the query SQL (define as class constants)
 		 * @param query The SQL query to execute.
 		 */
 		public DBQuery(Connection con, int pQueryType, String query) throws Exception
@@ -408,7 +408,6 @@ public class DBQuery
 		/**
 		 * Return the type of the query defined as class Constant
 		 * @return  queryType
-		 * @uml.property  name="queryType"
 		 */
 		public int getQueryType() {
 			return queryType;

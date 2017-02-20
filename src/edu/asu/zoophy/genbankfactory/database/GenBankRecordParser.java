@@ -24,7 +24,8 @@ public class GenBankRecordParser {
 	private PmidPmcidMapperInt mapper;
 	//indexLocus is always 0
 	/**
-	 * @param locusLines the record read from the flat file, one line
+	 * @param pLocusLines the record read from the flat file, one line
+	 * @param mapper PMID mapper
 	 */
 	public GenBankRecordParser(List<String> pLocusLines, PmidPmcidMapperInt mapper) {
 		this.mapper = mapper;
