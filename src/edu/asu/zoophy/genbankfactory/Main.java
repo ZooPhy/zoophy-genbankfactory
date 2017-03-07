@@ -36,7 +36,6 @@ public class Main {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
-	    		PredictorInserter.insertData();
 	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    	}
 	    	else if (args[0].equalsIgnoreCase("help")) {
