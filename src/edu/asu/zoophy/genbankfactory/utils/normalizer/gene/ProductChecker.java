@@ -5,18 +5,18 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.GenBankTree;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 
 public class ProductChecker {
-	//find all accessions that don't have genes listed//
+	
 	private static final Logger log = Logger.getLogger("ProductChecker");
 	private final String PULL_ACCS_MISSING_GENES = "SELECT \"Sequence_Details\".\"Accession\" FROM \"Sequence_Details\" WHERE NOT EXISTS(SELECT \"Gene_Name\" FROM \"Gene\" WHERE \"Gene\".\"Accession\"=\"Sequence_Details\".\"Accession\")";
 	private final String PULL_PRODUCTS = "SELECT \"Value\" FROM \"Features\" WHERE \"Key\"='product' AND \"Accession\"=?";
@@ -26,8 +26,6 @@ public class ProductChecker {
 	private DBQuery query;
 	private ResultSet rs;
 	private static ProductChecker checker = null;
-	@SuppressWarnings("unused")
-	private static GenBankFactory fact = GenBankFactory.getInstance();
 	GenBankTree gbt;
 	
 	public static ProductChecker getInstance() throws Exception {
@@ -59,7 +57,10 @@ public class ProductChecker {
 		}
 		query.close();
 		rs.close();
-		for (String acc : accs) {
+		Queue<String> targetAccessions = new LinkedList<String>(accs);
+		accs.clear();
+		while (!targetAccessions.isEmpty()) {
+			String acc = targetAccessions.remove();
 			try {
 				checkProduct(acc);
 				log.info("checked: "+acc);

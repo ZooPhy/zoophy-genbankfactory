@@ -12,6 +12,9 @@ import edu.asu.zoophy.genbankfactory.database.funnel.VirusFunnel;
 import edu.asu.zoophy.genbankfactory.index.Indexer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.date.DateNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.GeneNormalizer;
+import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.HantaNormalizer;
+import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.ProductChecker;
+import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.WNVNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.pH1N1.PH1N1Inserter;
 import edu.asu.zoophy.genbankfactory.utils.predictor.PredictorInserter;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostAligner;
@@ -31,12 +34,21 @@ public class Main {
 	private static String filter = null;
 	private static Logger log = Logger.getLogger("Main");
 
+	/**
+	 * Main method for running the GenBankFactor
+	 * @param args refer to help method
+	 */
 	public static void main(String[] args) {
 		try {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
+	    		//TODO: testing code below
+	    		WNVNormalizer wnvn = new WNVNormalizer();
+	    		wnvn.normalizeNotes();
+	    		//TODO: end testing code
 	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
+	    		System.exit(1);
 	    	}
 	    	else if (args[0].equalsIgnoreCase("help")) {
 	    		help();
@@ -83,11 +95,11 @@ public class Main {
 	 			//Parse Records and Dump//
 				gbFact.getFiles(filter);
 				//Update Host TaxonIDs//
-				HostNormalizer hn = new HostAligner();
-				hn.updateHosts();
+				HostNormalizer hostNorm = new HostAligner();
+				hostNorm.updateHosts();
 				//update dates//
-				DateNormalizer dn = DateNormalizer.getInstance();
-	 			dn.normalizeDates();
+				DateNormalizer dateNorm = DateNormalizer.getInstance();
+	 			dateNorm.normalizeDates();
 	 			//Update GeoName Locations//
 				runGeonameUpdater();
 				//Identify pH1N1 sequences//
@@ -95,6 +107,13 @@ public class Main {
 				//Create Big Index//
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
+				//Collect possible missing Genes//
+				HantaNormalizer hantaNorm = new HantaNormalizer();
+				hantaNorm.normalizeSegments();
+				WNVNormalizer wnvNorm = new WNVNormalizer();
+	    		wnvNorm.normalizeNotes();
+	    		ProductChecker poductCheck = ProductChecker.getInstance();
+	    		poductCheck.checkProducts();
 				//clear small DB//
 				log.info("Switching to Small DB");
 				gbFact.switchDB(gbFact.getProperty("SmallDB"));
@@ -179,6 +198,10 @@ public class Main {
 		}
 	}
 	
+	/**
+	 * Runs Tasnia's GeonameUpdater to normalize Geoname Locations
+	 * @throws Exception
+	 */
 	private static void runGeonameUpdater() throws Exception {
 		String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
 		File updaterFolder = new File(updaterDir);

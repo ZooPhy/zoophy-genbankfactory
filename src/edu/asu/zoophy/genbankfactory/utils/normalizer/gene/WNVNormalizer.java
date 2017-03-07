@@ -61,7 +61,7 @@ public class WNVNormalizer {
 	 * 
 	 * @throws Exception
 	 */
-	public void normalizeSegments() throws Exception {
+	public void normalizeNotes() throws Exception {
 		try {
 			Connection conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 			insertQuery =new DBQuery(conn, DBQuery.QT_INSERT_BATCH, INSERT_NOTES);
@@ -106,23 +106,29 @@ public class WNVNormalizer {
 	private void processNotes(List<String> targetAccs) throws Exception {
 		Connection conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 		int counter = 0;
-		for (String acc : targetAccs) {
+		final int total = targetAccs.size();
+		Set<String> uniqueNotes = new LinkedHashSet<String>(100);
+		while (!targetAccs.isEmpty()) {
+			String acc = targetAccs.remove(0);
 			List<Object> queryParams = new LinkedList<Object>();
 			queryParams.add(acc);
 			DBQuery pullNotesQuery = new DBQuery(conn, DBQuery.QT_SELECT_ONE_ROW, RETRIEVE_NOTE, queryParams);
 			ResultSet rs = null;
 			try {
-				rs = pullNotesQuery.executeSelectedRow();
-				rs.next();
-				String note = rs.getString("Value");
-				if (note != null) {
-					note = note.trim();
-						List<Object> insertParams = new LinkedList<Object>();
-						insertParams.add(acc);
-						insertParams.add(note);
-						insertQuery.addBatch(insertParams);
-						counter++;
-						log.info("note found for: "+acc+" : "+note);
+				rs = pullNotesQuery.executeSelect_MultiRows();
+				while (rs.next()) {
+					String note = rs.getString("Value");
+					if (note != null) {
+						note = cleanNote(note);
+						if (note != null && !note.isEmpty()) {
+							List<Object> insertParams = new LinkedList<Object>();
+							insertParams.add(acc);
+							insertParams.add(note);
+							insertQuery.addBatch(insertParams);
+							counter++;
+							uniqueNotes.add(note);
+						}
+					}
 				}
 			}
 			catch (SQLException sqle) {
@@ -135,8 +141,41 @@ public class WNVNormalizer {
 				pullNotesQuery.close();
 			}
 		}
-		log.info("WNV Genes found in Note features: "+counter);
+		for (String note : uniqueNotes) {
+			log.info(note);
+		}
+		log.info("WNV Genes found in Note features: "+counter+" out of "+total);
+		
 	}
 
+	/**
+	 * @param note
+	 * @return relevant Gene data from note feature
+	 */
+	private String cleanNote(String note) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/*
+	Patterns to check:
+		encodes *
+		contains *
+		NS*
+		E
+		M
+		pre M
+		* M protein
+		;* NS5
+		PrM
+		C-PrM-E
+		PreM
+		C
+		envelope
+		membrane
+		pre-membrane
+		capsid
+		includes * 
+	 */
 	
 }

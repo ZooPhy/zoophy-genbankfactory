@@ -381,7 +381,7 @@ public class DBQuery
 					throw new SQLException("No row has been returned when one was expected...");
 			}catch(SQLException e){
 				//TODO set the error level when finish the implementation (to avoid annoying message)
-				log.warning("SQL error during the fetching of the unique row:"+e.getMessage());
+				//log.warning("SQL error during the fetching of the unique row:"+e.getMessage());
 				close();
 				throw e;
 			}

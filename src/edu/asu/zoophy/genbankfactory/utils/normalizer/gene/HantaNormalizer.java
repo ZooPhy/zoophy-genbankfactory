@@ -107,14 +107,15 @@ public class HantaNormalizer {
 	private void processSegments(List<String> targetAccs) throws Exception {
 		Connection conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 		int counter = 0;
-		for (String acc : targetAccs) {
+		final int total = targetAccs.size();
+		while (!targetAccs.isEmpty()) {
+			String acc = targetAccs.remove(0);
 			List<Object> queryParams = new LinkedList<Object>();
 			queryParams.add(acc);
 			DBQuery pull_segment_query = new DBQuery(conn, DBQuery.QT_SELECT_ONE_ROW, RETRIEVE_SEGMENT, queryParams);
 			ResultSet rs = null;
 			try {
 				rs = pull_segment_query.executeSelectedRow();
-				rs.next();
 				String segment = rs.getString("Value");
 				if (segment != null) {
 					segment = segment.trim();
@@ -123,11 +124,12 @@ public class HantaNormalizer {
 					insertParams.add(segment);
 					insertQuery.addBatch(insertParams);
 					counter++;
-					log.info("segment found for: "+acc+" : "+segment);
 				}
 			}
 			catch (SQLException sqle) {
-				log.warning("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
+				if (!sqle.getMessage().equalsIgnoreCase("No row has been returned when one was expected...")) {
+					log.warning("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
+				}
 			}
 			finally {
 				if (rs != null) {
@@ -136,7 +138,7 @@ public class HantaNormalizer {
 				pull_segment_query.close();
 			}
 		}
-		log.info("Hantavirus Genes found in Segment features: "+counter);
+		log.info("Hantavirus Genes found in Segment features: "+counter+" out of "+total);
 	}
 
 }
