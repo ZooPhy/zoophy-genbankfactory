@@ -26,7 +26,7 @@ public class VirusFunnel {
 	private Queue<String> usableAccs = null;
 	private HashSet<String> accs = null;
 	private IndexSearcher indexSearcher = null;
-	IndexReader reader = null;
+	private IndexReader reader = null;
 	private QueryParser queryParser = null;
 	private Query query = null;
 	private TopDocs docs = null;
