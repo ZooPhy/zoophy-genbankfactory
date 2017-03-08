@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,10 +44,10 @@ public class WNVNormalizer {
 	private QueryParser queryParser = null;
 	private Query pullQuery = null;
 	private TopDocs docs = null;
-	private Set<String> accs;
 	private final String RETRIEVE_NOTE = "SELECT \"Value\" FROM \"Features\" WHERE \"Accession\"=? AND \"Key\"='note'";
 	private final String INSERT_NOTES = "INSERT INTO \"Gene\"(\"Gene_ID\",\"Accession\",\"Gene_Name\",\"Itv\") VALUES(default,?,?,'NOTE')";
-	private DBQuery insertQuery = null; 
+	private DBQuery insertQuery = null;
+	private Set<String> allowedExactNotes;
 
 
 	public WNVNormalizer() throws IOException {
@@ -55,6 +56,26 @@ public class WNVNormalizer {
 		reader = DirectoryReader.open(indexDirectory);
 		indexSearcher = new IndexSearcher(reader);
 		queryParser = new QueryParser("Accession", new KeywordAnalyzer());
+		allowedExactNotes = new HashSet<String>();
+		allowedExactNotes.add("e");
+		allowedExactNotes.add("m");
+		allowedExactNotes.add("c");
+		allowedExactNotes.add("envelope");
+		allowedExactNotes.add("pre m");
+		allowedExactNotes.add("prem");
+		allowedExactNotes.add("prm");
+		allowedExactNotes.add("pre m");
+		allowedExactNotes.add("membrane");
+		allowedExactNotes.add("pre-membrane");
+		allowedExactNotes.add("capsid");
+		allowedExactNotes.add("caspid");
+		allowedExactNotes.add("premembrane");
+		allowedExactNotes.add("ns");
+		allowedExactNotes.add("env");
+		allowedExactNotes.add("core");
+		allowedExactNotes.add("prM/M");
+		allowedExactNotes.add("non-structural");
+		allowedExactNotes.add("nonstructural");
 	}
 
 	/**
@@ -68,7 +89,7 @@ public class WNVNormalizer {
 			log.info("Finding WNV Accessions with missing Genes...");
 			pullQuery = queryParser.parse("TaxonID:11082");
 			docs = indexSearcher.search(pullQuery, 1000000);
-			accs = new LinkedHashSet<String>(docs.scoreDocs.length, 0.9f);
+			Set<String> accs = new LinkedHashSet<String>(docs.scoreDocs.length, 0.9f);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
 		         if (doc.getFields("Gene").length == 0) {	
@@ -107,7 +128,6 @@ public class WNVNormalizer {
 		Connection conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 		int counter = 0;
 		final int total = targetAccs.size();
-		Set<String> uniqueNotes = new LinkedHashSet<String>(100);
 		while (!targetAccs.isEmpty()) {
 			String acc = targetAccs.remove(0);
 			List<Object> queryParams = new LinkedList<Object>();
@@ -117,16 +137,17 @@ public class WNVNormalizer {
 			try {
 				rs = pullNotesQuery.executeSelect_MultiRows();
 				while (rs.next()) {
-					String note = rs.getString("Value");
-					if (note != null) {
-						note = cleanNote(note);
-						if (note != null && !note.isEmpty()) {
-							List<Object> insertParams = new LinkedList<Object>();
-							insertParams.add(acc);
-							insertParams.add(note);
-							insertQuery.addBatch(insertParams);
+					String rawNote = rs.getString("Value");
+					if (rawNote != null) {
+						List<String> notes = cleanNote(rawNote);
+						if (notes != null && !notes.isEmpty()) {
+							for (String note : notes) {
+								List<Object> insertParams = new LinkedList<Object>();
+								insertParams.add(acc);
+								insertParams.add(note);
+								insertQuery.addBatch(insertParams);
+							}
 							counter++;
-							uniqueNotes.add(note);
 						}
 					}
 				}
@@ -141,41 +162,156 @@ public class WNVNormalizer {
 				pullNotesQuery.close();
 			}
 		}
-		for (String note : uniqueNotes) {
-			log.info(note);
-		}
 		log.info("WNV Genes found in Note features: "+counter+" out of "+total);
-		
 	}
 
 	/**
 	 * @param note
 	 * @return relevant Gene data from note feature
 	 */
-	private String cleanNote(String note) {
-		// TODO Auto-generated method stub
-		return null;
+	private List<String> cleanNote(String note) {
+		note = note.trim();
+		if (note.isEmpty()) {
+			return null;
+		}
+		Set<String> noteGenes = new HashSet<String>(8);
+		if (allowedExactNotes.contains(note.toLowerCase())) {
+			noteGenes.add(note);
+		}
+		else if (note.startsWith("includes")) {
+			note = note.substring(note.indexOf("includes")+"includes".length()).trim();
+			String[] chunks;
+			if (note.contains(",")) {
+				chunks = note.split(",");
+			}
+			else if (note.contains(";")) {
+				chunks = note.split(";");
+			}
+			else {
+				chunks = note.split(" ");
+			}
+			for (String chunk : chunks) {
+				chunk = chunk.trim();
+				if (chunk.startsWith("NS")) {
+					chunk = "NS";
+				}
+				if (allowedExactNotes.contains(chunk.toLowerCase())) {
+					noteGenes.add(chunk);
+				}
+			}
+		}
+		else if (note.startsWith("encodes")) {
+			note = note.substring(note.indexOf("encodes")+"encodes".length()).trim();
+			String[] chunks;
+			if (note.contains(",")) {
+				chunks = note.split(",");
+			}
+			else if (note.contains(";")) {
+				chunks = note.split(";");
+			}
+			else {
+				chunks = note.split(" ");
+			}
+			for (String chunk : chunks) {
+				chunk = chunk.trim();
+				if (chunk.startsWith("NS")) {
+					chunk = "NS";
+				}
+				if (allowedExactNotes.contains(chunk.toLowerCase())) {
+					noteGenes.add(chunk);
+				}
+			}
+		}
+		else if (note.startsWith("contains")) {
+			note = note.substring(note.indexOf("contains")+"contains".length()).trim();
+			String[] chunks;
+			if (note.contains(",")) {
+				chunks = note.split(",");
+			}
+			else if (note.contains(";")) {
+				chunks = note.split(";");
+			}
+			else {
+				chunks = note.split(" ");
+			}
+			for (String chunk : chunks) {
+				chunk = chunk.trim();
+				if (chunk.startsWith("NS")) {
+					chunk = "NS";
+				}
+				if (allowedExactNotes.contains(chunk.toLowerCase())) {
+					noteGenes.add(chunk);
+				}
+			}
+		}
+		else if (note.contains("putative;")) {
+			note = note.substring(note.indexOf("putative;")+"putative;".length()).trim();
+			if (allowedExactNotes.contains(note.toLowerCase())) {
+				noteGenes.add(note);
+			}
+		}
+		else if (note.equalsIgnoreCase("C-PrM-E")) {
+			noteGenes.add("C");
+			noteGenes.add("PrM");
+			noteGenes.add("E");
+		}
+		else {
+			String[] chunks = note.split(" ");
+			String chunk = chunks[0].trim();
+			if (chunk.startsWith("NS")) {
+				chunk = "NS";
+			}
+			else if (chunk.endsWith(";")) {
+				chunk = chunk.substring(chunk.lastIndexOf(";"));
+			}
+			if (chunk.equalsIgnoreCase("C-prM-E")) {
+				noteGenes.add("C");
+				noteGenes.add("prM");
+				noteGenes.add("E");
+			}
+			else if (chunk.equalsIgnoreCase("C-NS1")) {
+				noteGenes.add("C");
+				noteGenes.add("NS");
+			}
+			else if (allowedExactNotes.contains(chunk.toLowerCase())) {
+				noteGenes.add(chunk);
+				if (chunks.length > 1 && chunks[1].equalsIgnoreCase("and")) {
+					for (int i = 2; i < chunks.length; i++) {
+						chunk = chunks[i];
+						if (chunk.startsWith("NS")) {
+							chunk = "NS";
+						}
+						else if (chunk.endsWith(";")) {
+							chunk = chunk.substring(chunk.lastIndexOf(";"));
+						}
+						if (allowedExactNotes.contains(chunk.toLowerCase())) {
+							noteGenes.add(chunk);
+						}
+					}
+				}
+			}
+			else if (note.endsWith("NS5") || note.endsWith("NS3")) {
+				noteGenes.add("NS");
+			}
+			else if (note.endsWith("protein-envelope")) {
+				noteGenes.add("envelope");
+			}
+			else if (note.endsWith("protein-premembrane")) {
+				noteGenes.add("premembrane");
+			}
+			else if (note.endsWith("C/pre-M/E")) {
+				noteGenes.add("C");
+				noteGenes.add("pre-M");
+				noteGenes.add("E");
+			}
+			else if (note.equalsIgnoreCase("contain envelope protein")) {
+				noteGenes.add("envelope");
+			}
+			else {
+				return null;
+			}
+		}
+		return new LinkedList<String>(noteGenes);
 	}
-	
-	/*
-	Patterns to check:
-		encodes *
-		contains *
-		NS*
-		E
-		M
-		pre M
-		* M protein
-		;* NS5
-		PrM
-		C-PrM-E
-		PreM
-		C
-		envelope
-		membrane
-		pre-membrane
-		capsid
-		includes * 
-	 */
-	
+
 }

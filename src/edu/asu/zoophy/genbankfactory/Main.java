@@ -43,10 +43,6 @@ public class Main {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
-	    		//TODO: testing code below
-	    		WNVNormalizer wnvn = new WNVNormalizer();
-	    		wnvn.normalizeNotes();
-	    		//TODO: end testing code
 	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    		System.exit(1);
 	    	}
