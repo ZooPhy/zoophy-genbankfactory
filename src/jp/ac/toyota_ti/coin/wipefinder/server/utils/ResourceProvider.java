@@ -128,7 +128,7 @@ public class ResourceProvider
 	}
 	/**
 	 * Add a new provided resources to the {@link ResourceProvider}
-	 * If an new DBI is added while a DBI is already registered nothing is done (use {@link #removeResource(Enum<RP_PROVIDED_RESOURCES> pProvidedResource)} before)
+	 * If an new DBI is added while a DBI is already registered nothing is done (use {@link #removeResource} before)
 	 * If an new PropertiesProvider is added while a PropertiesProvider is already registered we merge the values (if an existing properties have the same name, the first one is kept)
 	 * @param pProvidedResource type of resource being provided
 	 * @param resource - resource to add
