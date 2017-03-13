@@ -347,6 +347,15 @@ public class GeneNormalizer {
 		hantaMappings.put("precursor glycoprotein gene", "M");
 		hantaMappings.put("s-gene", "S");
 		hantaMappings.put("pol", "L");
+		hantaMappings.put("m-segment", "M");
+		hantaMappings.put("s-segment", "S");
+		hantaMappings.put("medium (m)", "M");
+		hantaMappings.put("small (s)", "S");
+		hantaMappings.put("l-segment", "L");
+		hantaMappings.put("l; large", "L");
+		hantaMappings.put("m; medium", "M");
+		hantaMappings.put("s; small", "S");
+		hantaMappings.put("middle", "?");
 		//zika//
 		Arrays.sort(zikaTaxons);
 		zikaMappings.put("c", "C");
@@ -449,6 +458,19 @@ public class GeneNormalizer {
 		wnMappings.put("gp2\"", "complete");
 		wnMappings.put("gp3\"", "complete");
 		wnMappings.put("pol", "?");
+		wnMappings.put("core", "?");
+		wnMappings.put("pre m", "?");
+		wnMappings.put("prem", "?");
+		wnMappings.put("pre-membrane", "?");
+		wnMappings.put("prm", "?");
+		wnMappings.put("caspid", "?");
+		wnMappings.put("nonstructural", "NS");
+		wnMappings.put("premembrane", "?");
+		wnMappings.put("non-structural", "NS");
+		wnMappings.put("envelope", "E");
+		wnMappings.put("capsid", "?");
+		wnMappings.put("membrane", "?");
+		wnMappings.put("pre-M", "?");
 		//Flu A//
 		Arrays.sort(fluATaxons);
 		fluAMappings.put("pb2", "PB2");
