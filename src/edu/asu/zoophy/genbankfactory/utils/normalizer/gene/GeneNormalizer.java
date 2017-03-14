@@ -131,7 +131,7 @@ public class GeneNormalizer {
 			log.info("DB already up to date.");
 		}
 	}
-
+	
 	private void updateGenes(List<TempGene> genes) {
 		int total_updates = 0;
 		try {
@@ -162,12 +162,12 @@ public class GeneNormalizer {
 			}
 			log.info(total_updates+ " genes successfully updated.");
 			total_updates = 0;
-		} 
+		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error updating genes: "+e.getMessage());
 		}
 	}
-
+	
 	private int findRelevantTaxon(int taxon) {
 		if (Arrays.binarySearch(acceptedTaxons, taxon) >= 0) {
 			return taxon;
@@ -546,6 +546,7 @@ public class GeneNormalizer {
 		fluAMappings.put("pb 1", "PB1");
 		fluAMappings.put("h1ha", "HA");
 		fluAMappings.put("ha\"                     /product=\"hemagglutinin", "HA");
+		fluAMappings.put("hemagglutinin", "HA");
 		fluAMappings.put("pbp2", "PB2");
 		fluAMappings.put("ha gene", "HA");
 		fluAMappings.put("m", "M");
@@ -578,6 +579,9 @@ public class GeneNormalizer {
 		fluAMappings.put("mbgl", "HA");
 		fluAMappings.put("mp2", "M");
 		fluAMappings.put("ms2", "M");
+		fluAMappings.put("nep\"                     /gene_synonym=\"ns2", "NS");
+		fluAMappings.put("nep/ns2", "NS");
+		fluAMappings.put("ns2/nep", "NS");
 		//Flu B//
 		Arrays.sort(fluBTaxons);
 		fluBMappings.put("pb2", "PB2");
@@ -635,4 +639,5 @@ public class GeneNormalizer {
 		hantaGenes = Arrays.asList("S","M","L");
 		fluAGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
 	}
+	
 }
