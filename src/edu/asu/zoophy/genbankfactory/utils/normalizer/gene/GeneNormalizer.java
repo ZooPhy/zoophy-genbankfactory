@@ -355,7 +355,7 @@ public class GeneNormalizer {
 		hantaMappings.put("l; large", "L");
 		hantaMappings.put("m; medium", "M");
 		hantaMappings.put("s; small", "S");
-		hantaMappings.put("middle", "?");
+		hantaMappings.put("middle", "M");
 		//zika//
 		Arrays.sort(zikaTaxons);
 		zikaMappings.put("c", "C");
@@ -435,13 +435,13 @@ public class GeneNormalizer {
 		rabiesMappings.put("gpg", "G");
 		rabiesMappings.put("glycoprotein", "G");
 		rabiesMappings.put("glycoprotein\"", "G");
-		rabiesMappings.put("ns", "?");
-		rabiesMappings.put("cvsns", "?");
-		rabiesMappings.put("cvs-g", "?");
-		rabiesMappings.put("np", "?");
-		rabiesMappings.put("psi", "?");
-		rabiesMappings.put("ns(p)", "?");
-		rabiesMappings.put("gpl", "?");
+		rabiesMappings.put("ns", "complete");
+		rabiesMappings.put("cvsns", "P");
+		rabiesMappings.put("cvs-g", "complete");
+		rabiesMappings.put("np", "N");
+		rabiesMappings.put("psi", "L");
+		rabiesMappings.put("ns(p)", "complete");
+		rabiesMappings.put("gpl", "G");
 		//west nile//
 		Arrays.sort(wnTaxons);
 		wnMappings.put("c", "C");
@@ -451,26 +451,26 @@ public class GeneNormalizer {
 		wnMappings.put("env", "E");
 		wnMappings.put("ns5", "NS");
 		wnMappings.put("ns3", "NS");
-		wnMappings.put("genomic rna", "?");
+		wnMappings.put("genomic rna", "complete");
 		wnMappings.put("viral genome", "complete");
 		wnMappings.put("polyprotein", "NS");
 		wnMappings.put("gp1\"", "complete");
 		wnMappings.put("gp2\"", "complete");
 		wnMappings.put("gp3\"", "complete");
-		wnMappings.put("pol", "?");
-		wnMappings.put("core", "?");
-		wnMappings.put("pre m", "?");
-		wnMappings.put("prem", "?");
-		wnMappings.put("pre-membrane", "?");
-		wnMappings.put("prm", "?");
-		wnMappings.put("caspid", "?");
+		wnMappings.put("pol", "complete");
+		wnMappings.put("core", "complete");
+		wnMappings.put("pre m", "complete");
+		wnMappings.put("prem", "complete");
+		wnMappings.put("pre-membrane", "complete");
+		wnMappings.put("prm", "complete");
+		wnMappings.put("caspid", "C");
 		wnMappings.put("nonstructural", "NS");
-		wnMappings.put("premembrane", "?");
+		wnMappings.put("premembrane", "complete");
 		wnMappings.put("non-structural", "NS");
 		wnMappings.put("envelope", "E");
-		wnMappings.put("capsid", "?");
-		wnMappings.put("membrane", "?");
-		wnMappings.put("pre-M", "?");
+		wnMappings.put("capsid", "C");
+		wnMappings.put("membrane", "complete");
+		wnMappings.put("pre-M", "complete");
 		//Flu A//
 		Arrays.sort(fluATaxons);
 		fluAMappings.put("pb2", "PB2");
@@ -575,9 +575,9 @@ public class GeneNormalizer {
 		fluAMappings.put("ns 2", "NS");
 		fluAMappings.put("pb1-n40", "PB1");
 		fluAMappings.put("nucleoprotein", "NP");
-		fluAMappings.put("mbgl", "?");
-		fluAMappings.put("mp2", "?");
-		fluAMappings.put("ms2", "?");
+		fluAMappings.put("mbgl", "HA");
+		fluAMappings.put("mp2", "M");
+		fluAMappings.put("ms2", "M");
 		//Flu B//
 		Arrays.sort(fluBTaxons);
 		fluBMappings.put("pb2", "PB2");
@@ -624,7 +624,7 @@ public class GeneNormalizer {
 		fluCMappings.put("nep\"                     /gene_synonym=\"ns2", "NS");
 		fluCMappings.put("np\"", "NP");
 		fluCMappings.put("nep/ns2", "NS");
-		fluCMappings.put("p42", "?");
+		fluCMappings.put("p42", "M");
 		//gene lists//
 		zikaGenes = Arrays.asList("C","M","E","NS");
 		fluBGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
