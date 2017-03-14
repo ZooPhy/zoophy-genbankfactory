@@ -24,7 +24,8 @@ public class GenBankRecordParser {
 	private PmidPmcidMapperInt mapper;
 	//indexLocus is always 0
 	/**
-	 * @param locusLines the record read from the flat file, one line
+	 * @param pLocusLines the record read from the flat file, one line
+	 * @param mapper PMID mapper
 	 */
 	public GenBankRecordParser(List<String> pLocusLines, PmidPmcidMapperInt mapper) {
 		this.mapper = mapper;
@@ -211,8 +212,11 @@ public class GenBankRecordParser {
 			log.log(Level.SEVERE, "Apparently I have an accession line with a different format than the one expected ["+accession.size()+"]: "+this.toString());
 		}
 		else {
-			mapInformation.put("ACCESSION", accession.get(0).substring(11));
-			//log.info("Added Accession: " + accession.get(0).substring(11));
+			String cleanAccession = accession.get(0).substring(11).trim();
+			if (cleanAccession.contains(" ") && cleanAccession.length() > 6) {
+				cleanAccession = cleanAccession.split(" ")[0].trim();
+			}
+			mapInformation.put("ACCESSION", cleanAccession);
 		}
 	}
 	protected void processFeatures(Integer start, Integer end) {

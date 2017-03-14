@@ -1,0 +1,13 @@
+edu.asu.zoophy.genbankfactory
+edu.asu.zoophy.genbankfactory.database
+edu.asu.zoophy.genbankfactory.database.funnel
+edu.asu.zoophy.genbankfactory.index
+edu.asu.zoophy.genbankfactory.utils.normalizer.date
+edu.asu.zoophy.genbankfactory.utils.normalizer.gene
+edu.asu.zoophy.genbankfactory.utils.pH1N1
+edu.asu.zoophy.genbankfactory.utils.pmcid
+edu.asu.zoophy.genbankfactory.utils.predictor
+edu.asu.zoophy.genbankfactory.utils.taxonomy
+edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter
+jp.ac.toyota_ti.coin.wipefinder.server.database
+jp.ac.toyota_ti.coin.wipefinder.server.utils

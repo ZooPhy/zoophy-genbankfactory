@@ -44,3 +44,5 @@ pmcid.csv.dir=
 geoname.updater.dir=
 # path to pH1N1 accession .txt list
 ph1n1.list=
+# path to Dan's US predictor csv file
+predictor.csv=

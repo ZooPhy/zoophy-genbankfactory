@@ -7,3 +7,5 @@ src/GenBankFactory.local.properties
 bin/
 .classpath
 *.class
+*.log
+*nohup.out

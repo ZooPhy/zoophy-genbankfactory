@@ -7,7 +7,7 @@ import java.util.List;
 public interface GenBankRecordDAOInt {
 	/**
 	 * Dump the parsed records into the DB
-	 * @param List of parsed GenBankRecords
+	 * @param parsedRecords List of parsed GenBankRecords
 	 */
 	public void dumpRecords(List<GenBankRecord> parsedRecords);
 	/**

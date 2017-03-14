@@ -138,6 +138,7 @@ public class GenBankFactory {
 			String taxDumpFolder = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy");
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
+			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -159,6 +160,7 @@ public class GenBankFactory {
 			properties.put("BigIndex", bigIndex);
 			properties.put("SmallIndex", smallIndex);
 			properties.put("PH1N1List", pH1N1List);
+			properties.put("predictor.csv", predictorCSV);
 		} 
 		catch (Exception e) {
 			log.log(Level.SEVERE, "error getting properties file");
@@ -439,7 +441,7 @@ public class GenBankFactory {
 	/**
 	 * Read the file and create a GenBankRecord object before inserting it
 	 * @param filename
-	 * @return 
+	 * @return records proccessed from the given file
 	 */
 	public ArrayList<GenBankRecord> processFile(String filename) {
 		ArrayList<GenBankRecord> processedRecords = null;

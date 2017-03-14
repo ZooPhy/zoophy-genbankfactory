@@ -25,7 +25,6 @@ public class GenBankTree extends Tree {
 	
 	/**
 	 * We build directly the tree from the DB, overload for other uses
-	 * @param conn a connection open on the DB
 	 * @throws Exception 
 	 */
 	public static GenBankTree getInstance() throws Exception {

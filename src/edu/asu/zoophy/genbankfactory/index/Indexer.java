@@ -579,7 +579,7 @@ public class Indexer {
 	/**
 	 * Format the date in Lucene format,
 	 * @param record
-	 * @return
+	 * @return Lucene formatted date
 	 * @exception return 10000101, that is 01 Jan 1000, the default date
 	 */
 	protected String formatDate(GenBankRecord record) {
@@ -682,7 +682,6 @@ public class Indexer {
 	}
 	/**
 	 * Create the index based on the GenBank DB and Annotation DB available
-	 * @param args
 	 */
 	public void index() throws IndexerException {
 		GenBankTree gbTree;
