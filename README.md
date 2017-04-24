@@ -1,3 +1,5 @@
-# README #
+# GenBankFactory #
 
-GenBankFactory project for the GenBankFactory.jar file used for GenBank data dumps. 
+Data extraction and normalization pipeline used for bi-monthly GenBank data dumps. 
+
+Javadocs should be kept up to date [here](https://zodo.asu.edu/javadocs/genbankfactory/). 
