@@ -47,7 +47,7 @@ public class GeneNormalizer {
 	private final String PULL_GENES = "SELECT \"Gene_ID\", \"Gene_Name\", \"Tax_ID\" FROM \"Gene\" JOIN \"Sequence_Details\" ON \"Sequence_Details\".\"Accession\"=\"Gene\".\"Accession\" WHERE \"Normalized_Gene_Name\" IS NULL ORDER BY \"Gene_ID\" ASC";
 	private List<TempGene> genes;
 	private List<Object> queryParams;
-	private final int BATCH_SIZE =50000;
+	private final int BATCH_SIZE = 50000;
 	private int batch_count;
 	private List<String> zikaGenes;
 	private List<String> fluBGenes;
