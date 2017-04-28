@@ -5,6 +5,7 @@ CREATE TABLE "Sequence_Details" (
   "Organism" text NOT NULL,
   "Isolate" text,
   "Strain" text,
+  "Lineage" text,
   "Collection_Date" text,
   "Itv_From" integer NOT NULL,
   "Itv_To" integer NOT NULL,

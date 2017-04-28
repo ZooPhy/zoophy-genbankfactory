@@ -22,10 +22,10 @@ public class InfluenzaBLineageDetector {
 	public static String assignLineage(GenBankRecord fullRecord) {
 		// check Strain for obvious indication of Lineage
 		String strain = fullRecord.getSequence().getStrain();
-		if (strain.contains(VICTORIA_LINEAGE)) {
+		if (strain != null && strain.contains(VICTORIA_LINEAGE)) {
 			return VICTORIA_LINEAGE;
 		}
-		else if (strain.contains(YAMAGATA_LINEAGE)) {
+		else if (strain != null && strain.contains(YAMAGATA_LINEAGE)) {
 			return YAMAGATA_LINEAGE;
 		}
 		// check Comment for Lineage notes
@@ -36,11 +36,14 @@ public class InfluenzaBLineageDetector {
 				comment = features.get(i).getValue();
 				i = features.size();
 			}
+			else if (features.get(i).getKey().equalsIgnoreCase("lineage")) {
+				return features.get(i).getValue();
+			}
 		}
-		if (comment.contains("Lineage:"+VICTORIA_LINEAGE)) {
+		if (comment != null && comment.contains("Lineage:"+VICTORIA_LINEAGE)) {
 			return VICTORIA_LINEAGE;
 		}
-		else if (comment.contains("Lineage:"+YAMAGATA_LINEAGE)) {
+		else if (comment != null && comment.contains("Lineage:"+YAMAGATA_LINEAGE)) {
 			return YAMAGATA_LINEAGE;
 		}
 		// return Unknown if Lineage is not indicated

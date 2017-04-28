@@ -15,6 +15,7 @@ import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.GeneNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.HantaNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.ProductChecker;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.WNVNormalizer;
+import edu.asu.zoophy.genbankfactory.utils.normalizer.lineage.InfluenzaBLineageNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.pH1N1.PH1N1Inserter;
 import edu.asu.zoophy.genbankfactory.utils.predictor.PredictorInserter;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter.HostAligner;
@@ -43,6 +44,10 @@ public class Main {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
+	    		//TODO testing
+	    		gbFact = GenBankFactory.getInstance();
+	    		InfluenzaBLineageNormalizer fluBNormalizer = new InfluenzaBLineageNormalizer(gbFact.getProperty("BigIndex"));
+				fluBNormalizer.run();
 	    		log.log(Level.SEVERE, "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    		System.exit(1);
 	    	}
@@ -100,6 +105,9 @@ public class Main {
 				runGeonameUpdater();
 				//Identify pH1N1 sequences//
 				PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
+				// Assign Flu B lineages//
+				InfluenzaBLineageNormalizer fluBNormalizer = new InfluenzaBLineageNormalizer(gbFact.getProperty("BigIndex"));
+				fluBNormalizer.run();
 				//Create Big Index//
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
