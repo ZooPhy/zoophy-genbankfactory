@@ -202,7 +202,11 @@ public class Indexer {
 		else {
 			doc.add(new TextField("Definition", "Unknown", Field.Store.YES));
 		}
-		doc.add(new StringField("SegmentLength", String.valueOf(record.getSequence().getSegment_length()),Field.Store.YES));
+		String segmentLength = String.valueOf(record.getSequence().getSegment_length());
+		while (segmentLength.length() < 5) {
+			segmentLength = "0"+segmentLength;
+		}
+		doc.add(new StringField("SegmentLength", segmentLength,Field.Store.YES));
 		//add gene info//
 		if (record.getGenes() != null) {
 			for (Gene g : record.getGenes()) {
