@@ -38,15 +38,14 @@ public class Node {
 	 */
 	public List<Node> getAncestors() {
 		List<Node> ancestors = new ArrayList<Node>();
-		if(this.isRoot()) {
-			return ancestors;
+		if (!this.isRoot()) {
+			Node currentNode = this.getFather();
+			while(!currentNode.isRoot()) {
+				ancestors.add(currentNode);
+				currentNode = currentNode.getFather();
+			}
+			ancestors.add(currentNode);//the last if the root normally
 		}
-		Node currentNode = this.getFather();
-		while(!currentNode.isRoot()) {
-			ancestors.add(currentNode);
-			currentNode = currentNode.getFather();
-		}
-		ancestors.add(currentNode);//the last if the root normally
 		return ancestors;
 	}
 	public void setFather(Node father) {
