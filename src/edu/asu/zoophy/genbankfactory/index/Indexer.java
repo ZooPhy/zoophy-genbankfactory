@@ -71,6 +71,8 @@ public class Indexer {
 	private int tooSpecificCountryMappedLocs = 0;
 	private int updatedTypes = 0;
 	private int updatedCountries = 0;
+	private int missingContinentCount = 0;
+	private Set<Long> missingContinents;
 	
 	private final Set<Integer> continents;
 	private final Set<Integer> naCountries;
@@ -110,6 +112,7 @@ public class Indexer {
 	    naCountries = new HashSet<Integer>(Arrays.asList(6255149,3576396,3573511,8505032,3577279,3374084,3578476,3573345,7626844,3572887,3582678,6251999,3624060,3562981,7626836,3575830,3508796,3580239,3425505,3579143,3595528,3608932,3723988,3489940,3575174,3580718,3576468,3578421,3570311,3578097,3996063,3617476,3703430,3424932,4566966,3585968,7609695,3576916,3573591,6252001,3577815,3577718,4796775));
 	    euCountries = new HashSet<Integer>(Arrays.asList(6255148,3041565,783754,2782113,661882,3277605,2802361,732800,630336,2658434,146669,3077311,2921044,2623032,453733,2510769,660013,2622320,3017382,2635167,3042362,2411586,390903,3202326,719819,2963597,3042225,2629691,3175395,3042142,3042058,597427,2960313,458258,2993457,617790,3194884,718075,2562770,2750405,3144096,798544,2264397,798549,6290252,0,2661886,3190538,607072,3057568,3168068,690791,3164670,831053));
 	    ocCountries = new HashSet<Integer>(Arrays.asList(6255151,5880801,2077456,1899402,2205218,2081918,4043988,4030945,2080185,4041468,2139685,2155115,2110425,4036232,2186224,4030656,2088628,4030699,1559582,2103350,4031074,1966436,4032283,2110297,5854968,2134431,4034749,4034894));
+	    missingContinents = new LinkedHashSet<Long>();
 	    //check the directory where the index will be opened
 		File indexDir = new File(indexPath);
 	    if (!indexDir.exists() || !indexDir.isDirectory()) {
@@ -476,8 +479,20 @@ public class Indexer {
 						}
 					}
 					if (Collections.disjoint(gIDs, continents)) {
-						Integer contID = assignContinent(gIDs);
-						gIDs.add(contID);
+						if (country_code != null) {
+							Integer countryID = geoTree.getCountryLookup().get(country_code);
+							if (countryID != null) {
+								gIDs.add(countryID);
+							}
+						}
+						if (Collections.disjoint(gIDs, continents)) {
+							Integer contID = assignContinent(gIDs);
+							if (contID.intValue() == 1) {
+								missingContinents.add(record.getGenBankLocation().getId());
+								missingContinentCount++;
+							}
+							gIDs.add(contID);
+						}
 					}
 					for (Integer gID : gIDs) {
 						doc.add(new StringField("GeonameID", String.valueOf(gID), Field.Store.YES));
@@ -561,7 +576,6 @@ public class Indexer {
 			return 6255151;
 		}
 		else {
-			log.warning("Could not find Continent for GeonameIDs: "+gIDs.toString());
 			return 1;
 		}
 	}
@@ -839,6 +853,8 @@ public class Indexer {
 			log.info("Country Mapped Locations: "+countryMappedLocs);
 			log.info("Unknown Locations: "+unknownLocs);
 			log.info("Locations with too specific ID successfully mapped to country: "+tooSpecificCountryMappedLocs);
+			log.info("Total Records missing Continents: "+missingContinentCount);
+			log.info(missingContinents.size()+" unique Geonames missing Continents: "+missingContinents.toString());
 		}
 	}
 }
