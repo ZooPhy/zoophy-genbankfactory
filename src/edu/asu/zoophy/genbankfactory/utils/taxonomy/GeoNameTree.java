@@ -68,7 +68,7 @@ public class GeoNameTree extends Tree {
 		asia.setName("Asia");
 		asia.setLatitude(29.84064);
 		asia.setLongitude(89.29688);
-		asia.setContinent("");
+		asia.setContinent("AS");
 		temp = new GeoNameNode(false, asia);
 		mapIDNodes.put(temp.getID(), temp);
 		temp.setFather(root);
