@@ -2,7 +2,14 @@
 # Genbank dump runs bimonthly
 #
 
-# Create a new database in pgadmin GenBankViruses_<month><year>
+# Summary of the script
+# 1. Create new database with name following the format GenBankViruses_<month><year>
+# 2. Take backup of old UI datbase.
+# 3. Fetch the latest genebankfactory code for github, make changes in configuration files, build the project and run the newly created jar. 
+# 4. Backup the old lucence index and replace it with newly created. 
+# 5. Fetch zoophy-services code from github, make changes in config files and then build the jar. 
+# 6. Kill the old zoophy-services process and start with newly created zoophy-services spring boot app.
+# 7. Fetch the latest code of zoophy-ui and restart the node app 
 
 DB_USER=zoophyadmin
 DB_HOST='zodo.asu.edu'
@@ -26,7 +33,7 @@ pg_dump -h $DB_HOST -U $DB_USER -F c GenBankViruses_UI > /home/zoophy/old_versio
 echo "taking backup of old ui db ..!"
 
 # Fetch latest code of zoophy-genbankfactory
-echo "Fecting latest code "
+echo "Fetching latest code "
 
 cd /home/zoophy/genbank/zoophy-genbankfactory ; git pull
 
@@ -62,7 +69,7 @@ echo "Jar built ..!"
 
 echo "kick off the data dump"
 echo "command"
-java -Xms4G -Xmx8G -jar target/zoophy-genbank-factory-1.4.2-jar-with-dependencies.jar dump create -f gbvrl > genebank_dump_`date "+%Y-%m-%d_%H:%M:%S"`.log 2>&1 
+java -Xms4G -Xmx8G -jar target/zoophy-genbank-factory-*-jar-with-dependencies.jar dump create -f gbvrl > genebank_dump_`date "+%Y-%m-%d_%H:%M:%S"`.log 2>&1 
 
 #############################################################################################################################################################
 
@@ -85,13 +92,13 @@ cd /home/zoophy/zoophy-services ; git pull ; ./build.sh
 # deploy new zoophy services 
 # if jar name is changes then edit jar name here
 # kill the old zoophy services
-process_id=`/bin/ps -fu $USER| grep "java -jar target/zoophy-rest-service-0.1.2.jar" | grep -v "grep" | awk '{print $2}'`
+process_id=`/bin/ps -fu $USER| grep "java -jar target/zoophy-rest-service*" | grep -v "grep" | awk '{print $2}'`
 echo "kiiling the old process "$process_id
 kill -9 $process_id
 
 # start spring boot app
 echo "starting zoophy rest services..! "
-java -jar target/zoophy-rest-service-0.1.2.jar
+java -jar target/zoophy-rest-service*.jar > zoophy_services_`date "+%Y-%m-%d_%H:%M:%S"`.log 2>&1 & 
 
 # Setup the zoophy-ui
 echo "fetching zoophy ui"
