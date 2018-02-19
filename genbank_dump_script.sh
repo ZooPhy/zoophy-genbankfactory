@@ -17,7 +17,7 @@ DB_NAME='GenBankViruses'_`date +%b%Y`
 #DB_NAME='GenBankViruses_Dec2017'
 CREATE_DB="create database $DB_NAME;"
 SMALL_DB=''
-JDBC_DB_URL='jdbc:postgresql://zodo.asu.edu/'$DB_NAME
+JDBC_DB_URL='jdbc:postgresql://zodo.asu.edu/GenBankViruses_UI'
 UI_DB='GenBankViruses_UI'
 # give postgres password here
 export PGPASSWORD=
