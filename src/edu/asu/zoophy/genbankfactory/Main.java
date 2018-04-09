@@ -5,6 +5,7 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.asu.zoophy.gbmetadataupdater.GBMetadataUpdater;
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordDAOInt;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordSqlDAO;
@@ -91,13 +92,34 @@ public class Main {
 	 			//Parse Records and Dump//
 				gbFact.getFiles(filter);
 				//Update Host TaxonIDs//
-				HostNormalizer hostNorm = new HostAligner();
+				HostNormalizer hostNorm = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 				hostNorm.updateHosts();
 				//update dates//
 				DateNormalizer dateNorm = DateNormalizer.getInstance();
 	 			dateNorm.normalizeDates();
 	 			//Update GeoName Locations//
-				runGeonameUpdater();
+	 			
+	 			/*  Integrating new gbmetadataupdater code   */
+				
+	 			String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
+	 			File updaterFolder = new File(updaterDir);
+	 			if (!(updaterFolder.isDirectory() && updaterFolder.exists())) {
+	 				log.log(Level.SEVERE, "GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+	 				throw new Exception("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+	 			}
+	 			System.setProperty("user.dir", updaterDir);
+	 			
+	 			try {
+	 				GBMetadataUpdater gbu = new GBMetadataUpdater();
+	 				log.info("starting GBMetadataUpdater run method. current directory " + System.getProperty("user.dir"));
+	 				gbu.run();	
+	 				log.info("finished GBMetadataUpdater run method");
+	 			} catch (Exception e) {
+	 				log.log(Level.SEVERE, e.getMessage());
+	 			}
+	 			
+	 			//runGeonameUpdater();
+				
 				//Identify pH1N1 sequences//
 				PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
 				//Create Big Index//
@@ -156,7 +178,7 @@ public class Main {
 	    	else if (args.length < 3 && args[0].equalsIgnoreCase("normalize")) {
 	    		if (args[1].equalsIgnoreCase("host")) {
 	    			gbFact = GenBankFactory.getInstance();
-		 			HostNormalizer hn = new HostAligner();
+		 			HostNormalizer hn = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 					hn.updateHosts();
 	    		}
 	    		else if (args[1].equalsIgnoreCase("location")) {

@@ -46,3 +46,5 @@ geoname.updater.dir=
 ph1n1.list=
 # path to Dan's US predictor csv file
 predictor.csv=
+# path to file containing direct mapping of unmatched hosts
+unmatched.hosts.file=/home/zoophy/genbank/unmatched_hosts.tsv

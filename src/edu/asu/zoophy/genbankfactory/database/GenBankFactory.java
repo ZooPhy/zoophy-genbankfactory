@@ -139,6 +139,7 @@ public class GenBankFactory {
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
 			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
+			String unmatchedHostFilePath = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("unmatched.hosts.file");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -161,6 +162,7 @@ public class GenBankFactory {
 			properties.put("SmallIndex", smallIndex);
 			properties.put("PH1N1List", pH1N1List);
 			properties.put("predictor.csv", predictorCSV);
+			properties.put("UnmatchedHostsFile", unmatchedHostFilePath);
 		} 
 		catch (Exception e) {
 			log.log(Level.SEVERE, "error getting properties file");
