@@ -1,9 +1,12 @@
 package edu.asu.zoophy.genbankfactory.database;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+
 
 
 /**
@@ -21,6 +24,10 @@ public class Reference {
 	private String accession = null;
 	private String authors = null;
 	private String consrtm = null;
+	private List<Author> authorList = null;
+	private String institution = null;
+	private String submissionDate = null;
+	private Boolean extractInstitute = false;
 	/**
 	 * Davy: a constructor for the reference
 	 * @param pAccession
@@ -28,6 +35,7 @@ public class Reference {
 	 */
 	public Reference(String pAccession, List<String> components)
 	{
+		authorList = new ArrayList<Author>();
 		accession = pAccession;
 		if(!components.get(0).matches("REFERENCE   [0-9]+.*")) {
 			log.log(Level.SEVERE, "Apparently the REFERENCE is not in the format expected, first line incorrect: "+components.get(0));
@@ -49,7 +57,8 @@ public class Reference {
 				}
 				processSubsection(element);
 			}
-		}
+		} 
+
 	}
 	/**
 	 * We have one subsection of the Reference, we process it
@@ -83,6 +92,56 @@ public class Reference {
 		index++;
 		}
 		authors = out.toString().replaceAll(" +", " ");
+		// authors of one publication
+		//List<Author> authorsOfPub = new ArrayList<Author>();
+		
+		String[] splitAuthor = authors.split(", ");
+		
+		for (int i = 0; i < splitAuthor.length - 1 ; i++ )	{
+		
+			String [] name = splitAuthor[i].split(",");
+			
+			Author author = new Author();
+			
+			if (name.length == 1)
+				author.setLastName(name[0]);
+			else if (name.length == 2) {
+				author.setLastName(name[0]);
+				author.setInitial(name[1]);
+			}else if (name.length == 3) {
+				author.setLastName(name[0]);
+				author.setFirstName(name[2]);
+				author.setInitial(name[1]);
+			}
+			// add catch ArrayIndexOutOfBoundsException
+			
+			authorList.add(author);
+		
+		}
+		// process last authors seperated by and
+		String[] lastAuthors  = splitAuthor[splitAuthor.length - 1].split("and");
+		for (String lastAuthor:lastAuthors) {
+			String [] name = lastAuthor.split(",");
+			Author author = new Author();
+			
+			if (name.length == 1)
+				author.setLastName(name[0]);
+			else if (name.length == 2) {
+				author.setLastName(name[0]);
+				author.setInitial(name[1]);
+			}else if (name.length == 3) {
+				author.setLastName(name[0]);
+				author.setFirstName(name[2]);
+				author.setInitial(name[1]);
+			}
+			// add catch ArrayIndexOutOfBoundsException
+			
+			authorList.add(author);
+			
+		}
+		
+		//authorList.add(authorsOfPub);
+	
 	}
 	protected void processTitle(List<String> element){
 		StringBuilder out = new StringBuilder();
@@ -93,6 +152,9 @@ public class Reference {
 		index++;
 		}
 		title = out.toString().replaceAll(" +", " ");
+		if ( title.equals("Direct Submission") ){
+			extractInstitute = true;
+		}
 	}
 	protected void processJournal(List<String> element){
 		StringBuilder out = new StringBuilder();
@@ -103,6 +165,22 @@ public class Reference {
 		index++;
 		}
 		journal = out.toString().replaceAll(" +", " ");
+		
+		try {
+			if (extractInstitute) {
+				int startIndex = journal.indexOf("(");
+				int lastIndex = journal.indexOf(")");
+				
+				institution = journal.substring(lastIndex+1);
+				submissionDate = journal.substring(startIndex + 1, lastIndex);
+				extractInstitute = false; 
+			}
+		} catch (Exception e) {
+			// skip the reference and go to next
+			institution = null;
+			System.out.println("Journal Name "+ journal+ " Error occured in processJournal"  + e.getMessage());
+		}
+		
 	}
 	protected void processPubmed(List<String> element){
 		StringBuilder out = new StringBuilder();
@@ -176,4 +254,26 @@ public class Reference {
 	public void setAuthors(String authors) {
 		this.authors = authors;
 	}
+	public String getInstitution() {
+		return institution;
+	}
+	public void setInstitution(String institution) {
+		this.institution = institution;
+	}
+	public String getSubmissionDate() {
+		return submissionDate;
+	}
+	public void setSubmissionDate(String submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+	public List<Author> getAuthorList() {
+		return authorList;
+	}
+	public void setAuthorList(List<Author> authorList) {
+		this.authorList = authorList;
+	}
+	
+
+	
+	
 }

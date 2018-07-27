@@ -1,5 +1,8 @@
 package edu.asu.zoophy.genbankfactory.database;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author demetri
  */
@@ -20,11 +23,14 @@ public class Sequence {
 	private String sequence;
 	private int segment_length;
 	//for Sequence_Publication table//
-	private Publication pub;
+	private List<Publication> pub;
+	private List<List<Author>> authorPubList;
+	
 	private boolean isPH1N1 = false;
 	
 	public Sequence() {
-		//default//
+		//default// 
+		pub = new ArrayList<Publication>();
 	}
 
 	//getters and setters//
@@ -116,11 +122,21 @@ public class Sequence {
 		this.sequence = sequence;
 	}
 
-	public Publication getPub() {
+	
+
+	public List<List<Author>> getAuthorPubList() {
+		return authorPubList;
+	}
+
+	public void setAuthorPubList(List<List<Author>> authorPubList) {
+		this.authorPubList = authorPubList;
+	}
+
+	public List<Publication> getPub() {
 		return pub;
 	}
 
-	public void setPub(Publication pub) {
+	public void setPub(List<Publication> pub) {
 		this.pub = pub;
 	}
 

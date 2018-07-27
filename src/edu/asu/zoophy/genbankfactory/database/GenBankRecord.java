@@ -17,12 +17,17 @@ public class GenBankRecord {
 	private PossibleLocation genbankLocation;
 	private PossibleLocation geonameLocation;
 	
+	private String institute;
+	private List<List<Author>> authorList;
+	private String submissionDate;
+	
 	private List<PossibleLocation> possLocations;
 	
 	public GenBankRecord() {
 		genes = new ArrayList<Gene>();
 		features = new ArrayList<Feature>();
 		possLocations = new ArrayList<PossibleLocation>();
+		authorList = new ArrayList<List<Author>>();
 	}
 
 	public String getAccession() {
@@ -101,6 +106,31 @@ public class GenBankRecord {
 		this.genbankLocation = genBankLocation;
 	}
 	
+
+	public List<List<Author>> getAuthorList() {
+		return authorList;
+	}
+
+	public void setAuthorList(List<List<Author>> authorList) {
+		this.authorList = authorList;
+	}
+
+	public String getSubmissionDate() {
+		return submissionDate;
+	}
+
+	public void setSubmissionDate(String submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+
+	public String getInstitute() {
+		return institute;
+	}
+
+	public void setInstitute(String institute) {
+		this.institute = institute;
+	}
+
 	/**
 	 * @return PossibleLocation with highest probability
 	 */

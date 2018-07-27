@@ -80,16 +80,18 @@ public class Main {
 			    	dao = new GenBankRecordSqlDAO();
 					dao.createTables();
 					//insert/align taxonomy//
-					TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
+				/*  TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 					taxo = new TaxonomyInserter(gbFact.getProperty("TaxDumpFolder"));
 					taxo.insertTaxo();
 					PredictorInserter.insertData();
+				*/
 				}
 				else {
 					throw new Exception("Invalid command line arguments! Use \"help\" for jar argument instructions.");
 				}
 	 			//Parse Records and Dump//
 				gbFact.getFiles(filter);
+			/*	
 				//Update Host TaxonIDs//
 				HostNormalizer hostNorm = new HostAligner();
 				hostNorm.updateHosts();
@@ -184,9 +186,11 @@ public class Main {
 	    	else {
 	    		log.log(Level.SEVERE, "ERROR! Unrecognized command. Use \"help\" for jar argument instructions.");
 	    	}
+	    */	
 	    	log.info("GenBankFactory completed.");
 			System.exit(0);
-		}
+	    	}
+	    }
 		catch(Exception e) {
 			log.log(Level.SEVERE, "ERROR running GenBankFactory: " + e.getMessage());
 			e.printStackTrace();

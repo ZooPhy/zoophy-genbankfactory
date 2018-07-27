@@ -139,6 +139,7 @@ public class GenBankFactory {
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
 			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
+			String unmatchedHostFilePath = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("unmatched.hosts.file");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -161,6 +162,7 @@ public class GenBankFactory {
 			properties.put("SmallIndex", smallIndex);
 			properties.put("PH1N1List", pH1N1List);
 			properties.put("predictor.csv", predictorCSV);
+			properties.put("UnmatchedHostsFile", unmatchedHostFilePath);
 		} 
 		catch (Exception e) {
 			log.log(Level.SEVERE, "error getting properties file");
@@ -182,6 +184,19 @@ public class GenBankFactory {
 		Document document;
 		recordsAvailable = 0;
 		recordsProcessed = 0;
+		
+		/*try {
+			String filename = "gbvrl10.seq.gz";
+			log.info("********* Reading " + filename + " *********");
+			ArrayList<GenBankRecord> parsedRecords = processFile(filename);
+			dao.dumpRecords(parsedRecords);
+			log.info("Finished with file " + filename);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}*/
+		
 		//process the dump downloaded in local
 		if(use_local_files) {
 			try {
@@ -447,6 +462,7 @@ public class GenBankFactory {
 		ArrayList<GenBankRecord> processedRecords = null;
 		String encoding = "UTF-8";
 		InputStream fileStream;
+		log.log(Level.INFO,gb_directory + filename );
 		try {
 			int avail = 0;
 			fileStream = new FileInputStream(gb_directory + filename);
@@ -474,6 +490,7 @@ public class GenBankFactory {
 		}
 		catch(Exception e){
 			log.log(Level.SEVERE, "Unexpected error when reading the file: "+e.getMessage());
+			e.printStackTrace();
 		}
 		finally {
 			if(buffered!=null) {

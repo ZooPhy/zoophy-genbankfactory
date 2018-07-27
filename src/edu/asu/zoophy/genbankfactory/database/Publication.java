@@ -1,5 +1,10 @@
 package edu.asu.zoophy.genbankfactory.database;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+
+
 /**
  * Class to hold data for PubMed Articles
  * @author demetri/Davy
@@ -66,4 +71,33 @@ public class Publication {
 	public void setJournal(String journal) {
 		this.journal = journal;
 	}
+	
+	 public int hashCode() {
+	        return new HashCodeBuilder(17, 31). 
+	            append(title).
+	            append(journal).
+	            toHashCode();
+	    }
+	 @Override
+	 public boolean equals(Object obj) {
+	       if (!(obj instanceof Publication))
+	            return false;
+	        if (obj == this)
+	            return true;
+
+	        Publication target = (Publication) obj;
+	        return new EqualsBuilder().
+	            // if deriving: appendSuper(super.equals(obj)).
+	            append(title, target.title).
+	            append(journal, target.journal).
+	            isEquals();
+	    }
+
+	@Override
+	public String toString() {
+		return "Publication [title=" + title + ", journal=" + journal + "]";
+	}
+
+	
+	
 }

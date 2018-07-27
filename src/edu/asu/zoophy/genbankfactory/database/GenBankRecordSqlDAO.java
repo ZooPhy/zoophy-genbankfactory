@@ -4,16 +4,21 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.asu.zoophy.genbankfactory.utils.locextractor.CountryNameExtracter;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
@@ -50,6 +55,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"pH1N1\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
 	private final String RETRIEVE_INDEX_GENES = "SELECT \"Normalized_Gene_Name\" FROM \"Gene\" WHERE \"Accession\"=?";
 	
+	private final String INSTITUTION_INSERT = "INSERT INTO \"Institution\" (\"Institution\") SELECT ? WHERE NOT EXISTS (SELECT 1 FROM \"Institution\" WHERE \"Institution\"=?)";
 	//Query objects defined in Davy's WipeFinder project//
 	private DBQuery detailsQuery;
 	private DBQuery publicationQuery;
@@ -74,6 +80,25 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private DBQuery getIndexRecordsQuery;
 	private DBQuery getIndexGenesQuery;
 	
+	private DBQuery institutionQuery;
+	
+	// Hashmaps
+	private HashMap<Publication,Integer> publicationMap = new HashMap<Publication,Integer>();
+	//private HashMap<String,List<Integer>> accessionPubIdMap = new HashMap<String,List<Integer>>();
+	private HashMap<Author,Integer> authorMap = new HashMap<Author,Integer>();
+	private HashSet<Pair> authorIdPubId = new HashSet<Pair>();
+	private HashMap<String,Integer> institutionMap = new HashMap<String,Integer>();
+	private HashSet<Pair> authorInstitute = new HashSet<Pair>();
+	private HashSet<Pair> submission = new HashSet<Pair>();
+	private HashSet<Pair> sequencePublication = new HashSet<Pair>();
+	
+	
+	//IDs
+	private Integer pubId = 0;
+	private Integer authorId = 0;
+	private Integer instituteId = 0;
+	
+	
 	/**
 	 * Refresh insertion queries from the DB connection
 	 * @param conn DB Connection
@@ -88,6 +113,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			hostQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, HOST_INSERT);
 			geneQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, GENE_INSERT);
 			featureQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, FEATURE_INSERT);
+			institutionQuery = new DBQuery(conn,DBQuery.QT_INSERT_BATCH,INSTITUTION_INSERT);
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error setting up queries");
@@ -120,13 +146,15 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			log.info("Inserting " + parsedRecords.size() + " records");
 			insertSequenceDetails(parsedRecords);
 			//taking care of Publications since they are also used as FKeys//
-			insertPublications(parsedRecords);
+			//insertPublications(parsedRecords);
+			// insert new tables Author etc
+			insertNewTables(parsedRecords);
 			//setup DB connection//
 			conn = getDriver();
 			//setup prepared statements//
 			setupInsertQueries(conn);
 			//go through list of records and insert via batches of 1000 records// 
-			for (int i = 0; i < parsedRecords.size(); i++) {
+			/*for (int i = 0; i < parsedRecords.size(); i++) {
 				try {
 					addSequence(parsedRecords.get(i).getSequence());
 					addGenes(parsedRecords.get(i).getGenes());
@@ -134,6 +162,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					addHost(parsedRecords.get(i).getHost());
 					addGenBankLocation(parsedRecords.get(i).getGenBankLocation());
 					addGeonameLocation(parsedRecords.get(i).getGeonameLocation(), parsedRecords.get(i).getAccession());
+					//addInstitute(parsedRecords.get(i).getInstitute());
 					batchSize++;
 					if (batchSize == 50000 || (i == parsedRecords.size()-1 && batchSize > 0)) {
 						executeMainBatch();
@@ -145,7 +174,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				catch (Exception e) {
 					log.log(Level.SEVERE, "INSERTION ERROR: " + e.getMessage()); 
 				}
-			}
+			}*/
 			log.info("Main Insertion successfully completed");
 		}
 		catch (Exception e) {
@@ -209,6 +238,258 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			closeConn(conn);
 		}
 	}
+	
+	private void insertNewTables(List<GenBankRecord> parsedRecords) {
+		Connection conn = null;
+		/*String SELECTION_PUBLICATION = "SELECT \"Pub_ID\" from \"Publication\" where \"Pubmed_ID\" = ? and Lower(\"Title\") = ? and Lower(\"Journal\") = ? ";
+		String INSERT_PUBLICATION = "Insert into \"Publication\"(\"Pubmed_ID\",\"Pubmed_Central_ID\", \"Title\", \"Journal\")  VALUES(?,?,?,?) Returning \"Pub_ID\" ";
+		String SELECTION_AUTHOR = "SELECT \"Author_ID\" from \"Author\" where Lower(\"Last_Name\") = ? and Lower(\"Initials\") = ? ";
+		String INSERT_AUTHOR = "INSERT INTO \"Author\"(\"First_Name\",\"Initials\",\"Last_Name\") VALUES(?,?,?) Returning \"Author_ID\" ";
+		String SELECT_AUTHOR_PUBLICATION = "SELECT \"Author_ID\" from \"Author_Publication\" where \"Author_ID\" = ? and \"Pub_ID\" = ? ";
+		String INSERT_AUTHOR_PUBLICATION = "INSERT INTO \"Author_Publication\" VALUES(?,?)";
+		String INSERT_INSTITUTION = "INSERT INTO \"Institution\" (\"Institution\",\"Country\") VALUES(?,?) Returning \"Institution_ID\" ";
+		String SELECTION_INSTITUTION = "Select \"Institution_ID\" from \"Institution\" where Lower(\"Institution\") = ? ";
+		String SELECT_AUTHOR_INSTITUTION = "SELECT \"Author_ID\" from \"Author_Institution\" where \"Author_ID\" = ? and \"Institution_ID\" = ?";
+		String INSERT_AUTHOR_INSTITUTION = "INSERT INTO \"Author_Institution\" VALUES (?,?,?) " ;
+		String INSERT_SUBMISSION = "INSERT INTO \"Submission\" VALUES(?,?);";
+		String INSERT_SEQUENCE_PUBLICATION = "INSERT INTO \"Sequence_Publication\" VALUES(?,?);";
+		CountryNameExtracter countryNameExtracter = new CountryNameExtracter();*/
+		
+		try {
+			conn = getDriver();
+			
+			
+			for ( int i = 0; i < parsedRecords.size(); i++ ) {
+				
+				// insert Publications
+				
+				List<Publication> pubs =  parsedRecords.get(i).getSequence().getPub();
+				List<Integer> perAccessionPubIds = new ArrayList<Integer>();
+				for (int j = 0; j < pubs.size() ; j++) {
+					
+					if ( publicationMap.containsKey(pubs.get(j))) {
+						perAccessionPubIds.add( publicationMap.get(pubs.get(j)));
+						
+							
+					}
+					else {
+						publicationMap.put(pubs.get(j), ++pubId);
+						perAccessionPubIds.add(pubId);
+					}
+					
+				}
+				
+				// insert Authors and  Author_Publication
+				List<List<Author>> allAuthorsofAccession = parsedRecords.get(i).getAuthorList();
+				// if authors are empty skip inserting Author, Author_Publication, Institution, Author_Institution, Submission
+				if ( allAuthorsofAccession != null & allAuthorsofAccession.size() != 0 ) {
+				
+						for (int m = 0; m < perAccessionPubIds.size(); m++) {
+							// iterating over the authors of mth publication
+							for(int k = 0; k < allAuthorsofAccession.get(m).size(); k++) {
+								
+								
+								if (authorMap.containsKey( allAuthorsofAccession.get(m).get(k) )) {
+									Pair pair = new Pair(authorMap.get(allAuthorsofAccession.get(m).get(k)), perAccessionPubIds.get(m) );
+									authorIdPubId.add(pair);
+								}
+								else {
+									authorMap.put(allAuthorsofAccession.get(m).get(k), ++authorId);
+									Pair pair = new Pair(authorId, perAccessionPubIds.get(m) );
+									authorIdPubId.add(pair);
+									
+								}
+							}
+			
+						}
+						// first author of direct submission titled reference
+						Integer firstAuhorSubmission;
+						try {
+							if (authorMap.containsKey( allAuthorsofAccession.get(allAuthorsofAccession.size()-1).get(0)) ) {
+								firstAuhorSubmission = authorMap.get( allAuthorsofAccession.get(allAuthorsofAccession.size()-1).get(0) ) ;
+							}
+							else {
+								authorMap.put(allAuthorsofAccession.get(allAuthorsofAccession.size()-1).get(0) , ++authorId);
+								firstAuhorSubmission = authorId;
+							}
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							System.out.println("Accession: "+ parsedRecords.get(i).getAccession() );
+							for (List<Author> alist :allAuthorsofAccession)
+								System.out.println(alist);
+							
+							firstAuhorSubmission = 10;
+							e.printStackTrace();
+						}
+							
+						
+						// insert Institution
+						Integer perAccessionInstituteId;
+						if ( institutionMap.containsKey(parsedRecords.get(i).getInstitute()) ) {
+							perAccessionInstituteId = institutionMap.get(parsedRecords.get(i).getInstitute());
+						} 
+						else {
+							institutionMap.put(parsedRecords.get(i).getInstitute(), ++instituteId);
+							perAccessionInstituteId = instituteId;
+						}
+						
+						// insert Author_Institution  TODO: add collection date insertAuthorInstStmt.setString(3, parsedRecords.get(i).getSubmissionDate());
+						Pair pairAuthInst = new Pair(firstAuhorSubmission,perAccessionInstituteId );
+						
+						if (!authorInstitute.contains(pairAuthInst )) {
+							authorInstitute.add(pairAuthInst);
+						}
+						
+						// insert Submission
+						Pair pairSubmission = new Pair(firstAuhorSubmission, parsedRecords.get(i).getAccession());
+						if (!submission.contains(pairSubmission)) {
+							submission.add(pairSubmission);
+						}
+				}		
+								
+				// insert in Sequence_Publication
+				for (Integer temp: perAccessionPubIds) {
+					Pair localPair = new Pair(parsedRecords.get(i).getAccession(), temp);
+					
+					if (!sequencePublication.contains(localPair)) {
+						sequencePublication.add(localPair);
+					}
+				}
+				
+			}
+			
+			/* debug
+			System.out.println(" *Publication* "+ Arrays.asList( publicationMap));
+			System.out.println(" *Author* "+Arrays.asList( authorMap));
+			System.out.println(" *Institution* " + Arrays.asList( institutionMap));*/
+			
+			/*System.out.println(Arrays.asList( authorIdPubId));
+			System.out.println(Arrays.asList( authorIdPubId));
+			System.out.println(Arrays.asList( submission));
+			System.out.println(Arrays.asList( sequencePublication));
+			*/
+			// Inserting records in database
+			PreparedStatement preparedStatement;
+			//
+			String INSERT_PUBLICATION_BATCH = "Insert into \"Publication\"(\"Pub_ID\", \"Pubmed_ID\",\"Pubmed_Central_ID\", \"Title\", \"Journal\")  VALUES(?,?,?,?,?) ";
+			preparedStatement = conn.prepareStatement(INSERT_PUBLICATION_BATCH);
+			
+			for (Publication pubkey: publicationMap.keySet()) {
+				preparedStatement.setInt(1,publicationMap.get(pubkey) );
+	            preparedStatement.setInt(2, pubkey.getPubmedId());
+	            preparedStatement.setString(3, pubkey.getCentralId());
+	            preparedStatement.setString(4, pubkey.getTitle());
+	            preparedStatement.setString(5, pubkey.getJournal());
+	            preparedStatement.addBatch();
+			}
+			int[] inserted = preparedStatement.executeBatch();
+			//
+			String INSERT_AUTHOR_BATCH = "INSERT INTO \"Author\"(\"Author_ID\", \"First_Name\",\"Initials\",\"Last_Name\") VALUES(?,?,?,?) ";
+			
+			preparedStatement = conn.prepareStatement(INSERT_AUTHOR_BATCH);
+			
+			for(Author author: authorMap.keySet()) {
+				preparedStatement.setInt(1, authorMap.get(author));
+				preparedStatement.setString(2, author.getFirstName());
+				preparedStatement.setString(3, author.getInitial());
+				preparedStatement.setString(4, author.getLastName());
+				preparedStatement.addBatch();
+				
+			}
+			int [] authorInserted = preparedStatement.executeBatch();
+			//
+			String INSERT_AUTHOR_PUBLICATION_BATCH = "INSERT INTO \"Author_Publication\" VALUES(?,?)";
+			
+			preparedStatement = conn.prepareStatement(INSERT_AUTHOR_PUBLICATION_BATCH);
+			
+			for(Pair authPubPair: authorIdPubId) {
+				preparedStatement.setInt(1, (Integer)authPubPair.getLeft());
+				preparedStatement.setInt(2, (Integer)authPubPair.getRight());
+				preparedStatement.addBatch();
+				
+			}
+			int [] authorPublicationInserted = preparedStatement.executeBatch();
+			
+			
+			
+			String INSERT_INSTITUTION_BATCH = "INSERT INTO \"Institution\" (\"Institution_ID\", \"Institution\") VALUES(?,?)  ";
+			
+			preparedStatement = conn.prepareStatement(INSERT_INSTITUTION_BATCH);
+			
+			for(String name: institutionMap.keySet()) {
+				preparedStatement.setInt(1, institutionMap.get(name));
+				preparedStatement.setString(2, name);
+				preparedStatement.addBatch();
+				
+			}
+			int [] institutionInserted = preparedStatement.executeBatch();
+			
+			
+			String INSERT_AUTHOR_INSTITUTION_BATCH = "INSERT INTO \"Author_Institution\" (\"Author_ID\", \"Institution_ID\" )  VALUES (?,?) " ;
+			
+			preparedStatement = conn.prepareStatement(INSERT_AUTHOR_INSTITUTION_BATCH);
+			
+			for(Pair authorInstitute: authorInstitute) {
+				preparedStatement.setInt(1, (Integer)authorInstitute.getLeft());
+				preparedStatement.setInt(2, (Integer)authorInstitute.getRight());
+				preparedStatement.addBatch();
+				
+			}
+			int [] authorInstituteInserted = preparedStatement.executeBatch();
+			
+			//
+			String INSERT_SUBMISSION_BATCH = "INSERT INTO \"Submission\" VALUES(?,?);";
+			
+			preparedStatement = conn.prepareStatement(INSERT_SUBMISSION_BATCH);
+			
+			for(Pair sub: submission) {
+				preparedStatement.setInt(1, (Integer)sub.getLeft());
+				preparedStatement.setString(2, (String)sub.getRight());
+				preparedStatement.addBatch();
+				
+			}
+			int [] submissionInserted = preparedStatement.executeBatch();
+			
+			//
+			String INSERT_SEQUENCE_PUBLICATION_BATCH = "INSERT INTO \"Sequence_Publication\" VALUES(?,?);";
+			
+			preparedStatement = conn.prepareStatement(INSERT_SEQUENCE_PUBLICATION_BATCH);
+			
+			for(Pair seqPub: sequencePublication) {
+				preparedStatement.setString(1, (String)seqPub.getLeft());
+				preparedStatement.setInt(2, (Integer)seqPub.getRight());
+				preparedStatement.addBatch();
+				
+			}
+			int [] seqPubInserted = preparedStatement.executeBatch();
+			
+			System.out.println(" ^^HashMap Sizes ^^   \n"
+					+ "Publication Map: " + publicationMap.size() + "\n"
+					+ "Author Map: " + authorMap.size() + "\n"
+					+ "AuthorPub Map: " + authorIdPubId.size() + "\n"
+					+ "Inst Map: " + institutionMap.size() + "\n"
+					+ "AuthorInst Map: " + authorInstitute.size() + "\n"
+					+ "Sub Map: " + submission.size() + "\n"
+					+ "SeqPub Map: " + sequencePublication.size() + "\n");
+			
+			// clear all the hashmap and hashsets
+			publicationMap.clear();
+			authorMap.clear();
+			authorIdPubId.clear();
+			institutionMap.clear();
+			authorInstitute.clear();
+			submission.clear();
+			sequencePublication.clear();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+			log.log(Level.SEVERE, "Error inserting New tables: " + e.getMessage());
+		}finally {
+			//close connection//
+			closeConn(conn);
+		}
+	}
+	
 	/**
 	 * Inserts all of the Publications to satisfy Foreign Key constraints
 	 * @param parsedRecords
@@ -224,7 +505,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			publicationQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, PUBLICATION_INSERT);
 			for (int i = 0; i < parsedRecords.size(); i++) {
 				try {
-					Publication pub = parsedRecords.get(i).getSequence().getPub();
+					Publication pub = parsedRecords.get(i).getSequence().getPub().get(0);
 					if (pub != null) {
 						//avoiding duplicat records//
 						pubCheckQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, CHECK_PUBLICATION);
@@ -277,12 +558,12 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			sequenceQuery.addBatch(queryParams);
 			queryParams.clear();
 			//add data to sequence_publication batch//
-			if (seq.getPub() != null) {
+			/*if (seq.getPub() != null) {
 				queryParams.add(seq.getAccession().trim());
 				queryParams.add(seq.getPub().getPubmedId());
 				sequencePubQuery.addBatch(queryParams);
 				queryParams.clear();
-			}
+			}*/
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error adding Sequence " + seq.getAccession() + ": " + e.getMessage());
@@ -357,13 +638,13 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 		catch(SQLException se) {
 			printSQLError(se);
 		}
-		try {
+		/*try {
 			sequencePubQuery.executeBatch();
 			sequencePubQuery.close();
 		}
 		catch(SQLException se) {
 			printSQLError(se);
-		}
+		}*/
 		try {
 			featureQuery.executeBatch();
 			featureQuery.close();
@@ -371,8 +652,36 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 		catch(SQLException se) {
 			printSQLError(se);
 		}
+		
+		try {
+			institutionQuery.executeBatch();
+			institutionQuery.close();
+		}
+		catch(SQLException se) {
+			printSQLError(se);
+		}
+		
+		
 		//log.info("Main Batch Executed");
 	}
+	
+	private void addInstitute(String institute) {
+		
+		try {
+			List<Object> queryParams = new LinkedList<Object>();
+			queryParams.add(institute);
+			queryParams.add(institute);
+			institutionQuery.addBatch(queryParams);
+		} catch (SQLException e) {
+			log.log(Level.SEVERE, "Error adding Institute: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+	
+	
 	/**
 	 * Adds data for Genes to the Gene batch
 	 * @param genes
@@ -489,7 +798,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			Sequence seq = findSequenceDetails(accession);
 			seq.setSequence(findSequence(accession));
 			seq.setSegment_length(seq.getSequence().length());
-			seq.setPub(findPublication(accession));
+			//seq.setPub(findPublication(accession));
 			record.setSequence(seq); 
 			record.setHost(findHost(accession));
 			PossibleLocation genBankLoc = findGenBankLocation(accession);
@@ -897,7 +1206,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				if (rs.getString("Pub_ID") != null) {
 					Publication pub = new Publication();
 					pub.setPubId(Integer.valueOf(rs.getString("Pub_ID")));
-					seq.setPub(pub);
+					//seq.setPub(pub);
 				}
 				seq.setSegment_length(rs.getInt("Segment_Length"));
 				seq.setPH1N1(rs.getBoolean("pH1N1"));

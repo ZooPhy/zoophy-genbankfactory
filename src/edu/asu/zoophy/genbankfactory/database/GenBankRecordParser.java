@@ -18,10 +18,15 @@ public class GenBankRecordParser {
 	private Integer indexOrigin = null;
 	private List<String> locusLines = null;
 	private Map<String, String> mapInformation = null;
-	private Publication extractedPub = null;
+	private List<Publication> extractedPub = null;
 	private List<Feature> features = null;
 	private List<Gene> genes = null;
 	private PmidPmcidMapperInt mapper;
+	// new design
+	private String institutionName = null;
+	private String submissionDate = null;
+	private List<List<Author>> authorList = null;
+	
 	//indexLocus is always 0
 	/**
 	 * @param pLocusLines the record read from the flat file, one line
@@ -33,6 +38,8 @@ public class GenBankRecordParser {
 		mapInformation = new HashMap<String, String>();
 		features = new ArrayList<Feature>();
 		genes = new ArrayList<Gene>();
+		authorList = new ArrayList<List<Author>>();
+		extractedPub = new ArrayList<Publication>();
 		int index = 0;
 		while(index<locusLines.size()) {
 			//log.info(index+" -> "+locusLines.get(index));
@@ -128,11 +135,50 @@ public class GenBankRecordParser {
 		}
 		else {
 			Reference ref = new Reference(mapInformation.get("ACCESSION"), components);
+			
+			// Set authors if they haven't set yet
+			/*if (authorList.size() == 0 ) {
+				authorList = ref.getAuthorList();
+			}*/
+			// add authors
+			if (ref.getAuthorList() != null & ref.getAuthorList().size() != 0 )
+				authorList.add(ref.getAuthorList());
+			
+			// set institution and collection date 
+			if (ref.getInstitution() != null ) {
+				institutionName = ref.getInstitution();
+				submissionDate = ref.getSubmissionDate();
+			}
+			else // reference of type having Title not equal to "Direct Submission" i.e all publication except "direct submission"
+			
+			{
+				Publication publication = new Publication();
+				if( ref.getPubmed() != 0) {
+					publication.setPubmedId(ref.getPubmed());
+					try {
+						publication.setCentralId(mapper.getPMCID(String.valueOf( ref.getPubmed() )));
+					}
+					catch (Exception e) {
+						log.log(Level.SEVERE, "Error pulling PMCID: " + e.getMessage() + " " + ref.getPubmed());
+					}
+					
+				}
+				publication.setJournal(ref.getJournal());
+				publication.setTitle(ref.getTitle());
+				
+				extractedPub.add(publication);
+				
+				
+			}
+			// set publications
+		/*	
 			if (ref.getPubmed() != 0) {//at most 1 of the Locus references should have a pubmed id//
 				extractedPub = new Publication();
 				extractedPub.setPubmedId(ref.getPubmed());
 				try {
-					extractedPub.setCentralId(mapper.getPMCID(String.valueOf(extractedPub.getPubmedId())));
+					extractedPub.sif (authorList.size() == 0 ) {
+				authorList = ref.getAuthorList();
+			}etCentralId(mapper.getPMCID(String.valueOf(extractedPub.getPubmedId())));
 				}
 				catch (Exception e) {
 					log.log(Level.SEVERE, "Error pulling PMCID: " + e.getMessage());
@@ -147,7 +193,7 @@ public class GenBankRecordParser {
 				extractedPub.setJournal(ref.getJournal());
 				extractedPub.setTitle(ref.getTitle());
 				//log.info("Found Publication");//
-			}
+			}*/
 		}
 	}
 	/**
@@ -362,6 +408,9 @@ public class GenBankRecordParser {
 			}
 			record.setSequence(seq);
 			record.setHost(host);
+			record.setInstitute(institutionName);
+			record.setAuthorList(authorList);
+			record.setSubmissionDate(submissionDate);
 			//return completed record//
 			//checkRecord(record); //for testing how complete the records are//
 		}

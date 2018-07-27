@@ -191,8 +191,9 @@ public class Indexer {
 			doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
 			unknownLocs++;
 		}
+		// temp change fetching first pub
 		if (record.getSequence().getPub() != null) {
-			doc.add(new StringField("PubmedID", String.valueOf(record.getSequence().getPub().getPubId()), Field.Store.YES));
+			doc.add(new StringField("PubmedID", String.valueOf(record.getSequence().getPub().get(0).getPubId()), Field.Store.YES));
 		}
 		else {
 			doc.add(new StringField("PubmedID", "n/a", Field.Store.YES));

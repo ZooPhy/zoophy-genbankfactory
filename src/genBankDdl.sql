@@ -18,22 +18,83 @@ WITH (
 
 CREATE TABLE "Publication" (
   "Pub_ID" serial NOT NULL,
-  "Pubmed_ID" integer NOT NULL,
+  "Pubmed_ID" integer ,
   "Pubmed_Central_ID" text,
-  "Authors" text NOT NULL,
-  "Title" text NOT NULL,
+  "Title" text,
   "Journal" text,
-  CONSTRAINT "PK_Pub_ID" PRIMARY KEY ("Pub_ID"),
-  CONSTRAINT "Pubmed_Unique" UNIQUE ("Pubmed_ID")
+  CONSTRAINT "PK_Pub_ID" PRIMARY KEY ("Pub_ID")
 )
 WITH (
   OIDS=FALSE
 );
 
+
+CREATE TABLE "Author" (
+	"Author_ID" serial NOT NULL,
+	"First_Name" text,
+	"Initials" text,
+	"Last_Name" text,
+  CONSTRAINT "PK_Author_Author_ID" PRIMARY KEY ("Author_ID")
+)
+WITH  (
+  OIDS=FALSE
+);
+
+CREATE TABLE "Author_Publication" (
+  "Author_ID" integer,
+  "Pub_ID" integer,
+  CONSTRAINT "PK_Author_Pub" PRIMARY KEY ("Author_ID","Pub_ID"),
+  CONSTRAINT "AuthorPub_AuthorID_FKey" FOREIGN KEY ("Author_ID")
+    REFERENCES "Author" ("Author_ID"),
+  CONSTRAINT "AuthorPub_PubID_FKey" FOREIGN KEY ("Pub_ID")
+    REFERENCES "Publication" ("Pub_ID")
+)
+WITH  (
+  OIDS=FALSE
+);
+
+CREATE TABLE "Institution" (
+  "Institution_ID" serial,
+  "Institution" text,
+  "Country" text,
+  "City" text,
+  "Latitude" real,
+  "Longitude" real,
+  CONSTRAINT "PK_Institution_Inst_ID" PRIMARY KEY ("Institution_ID")
+)
+WITH  (
+  OIDS=FALSE
+);
+
+CREATE TABLE "Author_Institution" (
+  "Author_ID" integer,
+  "Institution_ID" integer,
+  "Date" text,
+  CONSTRAINT "PK_Author_Inst" PRIMARY KEY ("Author_ID","Institution_ID"),
+  CONSTRAINT "AuthorInst_AuthorID_FKey" FOREIGN KEY ("Author_ID")
+    REFERENCES "Author" ("Author_ID"),
+  CONSTRAINT "AuthorInst_InstID_FKey" FOREIGN KEY ("Institution_ID")
+    REFERENCES "Institution" ("Institution_ID")
+)
+WITH  (
+  OIDS=FALSE
+);
+
+CREATE TABLE "Submission" (
+  "Author_ID" integer,
+  "Accession" character varying(15) NOT NULL,
+  CONSTRAINT "PK_Submission" PRIMARY KEY ("Author_ID","Accession"),
+  CONSTRAINT "Submission_AuthorID_FKey" FOREIGN KEY ("Author_ID")
+    REFERENCES "Author" ("Author_ID")
+)
+WITH  (
+  OIDS=FALSE
+);
+
 CREATE TABLE "Host" (
   "Accession" character varying(15),
-  "Host_Name" text, 
-  "Host_taxon" integer, 
+  "Host_Name" text,
+  "Host_taxon" integer,
   CONSTRAINT "HostAccession_FKey" FOREIGN KEY ("Accession")
       REFERENCES "Sequence_Details" ("Accession") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -49,7 +110,7 @@ CREATE INDEX host_accession_index
 CREATE TABLE "Sequence" (
   "Accession" character varying(15),
   "Sequence" text NOT NULL,
-  "Segment_Length" integer NOT NULL, 
+  "Segment_Length" integer NOT NULL,
   CONSTRAINT "SeqAccession_FKey" FOREIGN KEY ("Accession")
       REFERENCES "Sequence_Details" ("Accession") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -69,7 +130,7 @@ CREATE TABLE "Sequence_Publication" (
       REFERENCES "Sequence_Details" ("Accession") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT "PubmedID_FKey" FOREIGN KEY ("Pub_ID")
-      REFERENCES "Publication" ("Pubmed_ID") MATCH SIMPLE
+      REFERENCES "Publication" ("Pub_ID") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 WITH (
@@ -86,7 +147,7 @@ CREATE INDEX "index_accession"
 
 CREATE TABLE "Location_GenBank" (
   "Accession" character varying(15),
-  "Location" text, 
+  "Location" text,
   "Latitude" real,
   "Longitude" real,
   CONSTRAINT "LocationAccession_FKey" FOREIGN KEY ("Accession")
@@ -143,7 +204,7 @@ CREATE INDEX accession_feature_index
 CREATE TABLE "Location_Geoname" (
   "Accession" character varying(15) NOT NULL,
   "Geoname_ID" integer,
-  "Location" text, 
+  "Location" text,
   "Latitude" real,
   "Longitude" real,
   "Type" text,
