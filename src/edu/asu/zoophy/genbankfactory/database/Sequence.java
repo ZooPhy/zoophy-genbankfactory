@@ -22,6 +22,7 @@ public class Sequence {
 	//for Sequence_Publication table//
 	private Publication pub;
 	private boolean isPH1N1 = false;
+	private String normalizaed_date; // normalizing collection_date to single format.
 	
 	public Sequence() {
 		//default//
@@ -139,5 +140,14 @@ public class Sequence {
 	public void setPH1N1(boolean isPH1N1) {
 		this.isPH1N1 = isPH1N1;
 	}
+
+	public String getNormalizaed_date() {
+		return normalizaed_date;
+	}
+
+	public void setNormalizaed_date(String normalizaed_date) {
+		this.normalizaed_date = normalizaed_date;
+	}
+	
 	
 }

@@ -17,6 +17,7 @@ public class PossibleLocation {
 	// GeoName location type ex. ADM1, ADM2, etc.
 	private String type;
 	private String country;
+	private String state;
 	
 	public PossibleLocation() {
 		//generic//
@@ -85,4 +86,13 @@ public class PossibleLocation {
 	public void setCountry(String country) {
 		this.country = country;
 	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+	
 }

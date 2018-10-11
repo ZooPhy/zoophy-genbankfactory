@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.asu.zoophy</groupId>
   <artifactId>zoophy-genbank-factory</artifactId>
-  <version>1.4.2</version>
+  <version>1.5.0</version>
   <name>genbankfactory</name>
   <description>Handles data dumping and normalization from GenBank.</description>
   
@@ -35,12 +35,38 @@
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-csv</artifactId>
-		    <version>1.2</version>
+		    <version>1.4</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-compress</artifactId>
 		    <version>1.12</version>
+		</dependency>
+		
+		
+		<dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		    <version>1.2.16</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>commons-codec</groupId>
+		    <artifactId>commons-codec</artifactId>
+		    <version>1.10</version>	
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-suggest</artifactId>
+		    <version>5.4.1</version>
+		</dependency>
+		
+		
+		<dependency>
+    		<groupId>edu.stanford.nlp</groupId>
+    		<artifactId>stanford-corenlp</artifactId>
+    		<version>3.6.0</version>
 		</dependency>
   </dependencies>
   
