@@ -48,13 +48,5 @@ public class GBMetadataUpdater {
 			throw new Exception("Exiting Run method due to Exception " +e.getMessage());
 		}
 	}
-	public static void main (String[] args) throws Exception {
-		try {
-			GBMetadataUpdater gbu = new GBMetadataUpdater();
-			gbu.run();	
-		} catch (Exception e) {
-			log.fatal(e.getMessage());
-		}
-		
-	}
+	
 }
