@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /**
+ * TODO: replace with jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery
  * @author  dw
  */
 public class DBQuery 
