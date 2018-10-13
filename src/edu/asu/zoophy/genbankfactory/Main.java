@@ -1,15 +1,17 @@
 package edu.asu.zoophy.genbankfactory;
 
 import java.io.File;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.asu.zoophy.gbmetadataupdater.GBMetadataUpdater;
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordDAOInt;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecordSqlDAO;
 import edu.asu.zoophy.genbankfactory.database.funnel.VirusFunnel;
 import edu.asu.zoophy.genbankfactory.index.Indexer;
+import edu.asu.zoophy.genbankfactory.utils.extractstate.ExtractState;
+import edu.asu.zoophy.genbankfactory.utils.formatter.date.DateFormatter;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.date.DateNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.GeneNormalizer;
 import edu.asu.zoophy.genbankfactory.utils.normalizer.gene.HantaNormalizer;
@@ -97,10 +99,35 @@ public class Main {
 				DateNormalizer dateNorm = DateNormalizer.getInstance();
 	 			dateNorm.normalizeDates();
 	 			//Update GeoName Locations//
-				runGeonameUpdater();
+	 			
+				// Runs Tasnia's GeonameUpdater to normalize Geoname Locations
+	 			String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
+	 			File updaterFolder = new File(updaterDir);
+	 			if (!(updaterFolder.isDirectory() && updaterFolder.exists())) {
+	 				log.log(Level.SEVERE, "GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+	 				throw new Exception("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+	 			}
+	 			System.setProperty("user.dir", updaterDir);
+	 			try {
+	 				GBMetadataUpdater gbu = new GBMetadataUpdater();
+	 				log.info("starting GBMetadataUpdater run method. current directory " + System.getProperty("user.dir"));
+	 				gbu.run();	
+	 				log.info("finished GBMetadataUpdater run method");
+	 			} catch (Exception e) {
+	 				log.log(Level.SEVERE, e.getMessage());
+	 			}
+				
 				//Identify pH1N1 sequences//
 				PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
 				//Create Big Index//
+				
+				// Normalize Dates and Extract State Feild
+				DateFormatter dateFormatter = DateFormatter.getInstance();
+				dateFormatter.formatDate();
+				
+				ExtractState extractState = ExtractState.getInstance();
+				extractState.extractState();
+				
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 				//Collect possible missing Genes//
@@ -161,7 +188,24 @@ public class Main {
 	    		}
 	    		else if (args[1].equalsIgnoreCase("location")) {
 	    			gbFact = GenBankFactory.getInstance();
-	    			runGeonameUpdater();
+	    			
+	    			//Runs Tasnia's GeonameUpdater to normalize Geoname Locations
+		 			String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
+		 			File updaterFolder = new File(updaterDir);
+		 			if (!(updaterFolder.isDirectory() && updaterFolder.exists())) {
+		 				log.log(Level.SEVERE, "GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+		 				throw new Exception("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
+		 			}
+		 			System.setProperty("user.dir", updaterDir);
+		 			
+		 			try {
+		 				GBMetadataUpdater gbu = new GBMetadataUpdater();
+		 				log.info("starting GBMetadataUpdater run method. current directory " + System.getProperty("user.dir"));
+		 				gbu.run();	
+		 				log.info("finished GBMetadataUpdater run method");
+		 			} catch (Exception e) {
+		 				log.log(Level.SEVERE, e.getMessage());
+		 			}
 	    		}
 	    		else if (args[1].equalsIgnoreCase("gene")) {
 	    			gbFact = GenBankFactory.getInstance();
@@ -176,6 +220,10 @@ public class Main {
 	    		else if (args[1].equalsIgnoreCase("ph1n1")) {
 	    			gbFact = GenBankFactory.getInstance();
 	    			PH1N1Inserter.updateSequences(gbFact.getProperty("PH1N1List"));
+	    		}else if (args[1].equalsIgnoreCase("state")) {
+	    			gbFact = GenBankFactory.getInstance();
+	    			ExtractState extractState = ExtractState.getInstance();
+					extractState.extractState();
 	    		}
 	    		else {
 	    			throw new Exception("Invalid command line arguments! Use \"help\" for jar argument instructions.");
@@ -191,37 +239,6 @@ public class Main {
 			log.log(Level.SEVERE, "ERROR running GenBankFactory: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
-		}
-	}
-	
-	/**
-	 * Runs Tasnia's GeonameUpdater to normalize Geoname Locations
-	 * @throws Exception
-	 */
-	private static void runGeonameUpdater() throws Exception {
-		String updaterDir = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geoname.updater.dir");
-		File updaterFolder = new File(updaterDir);
-		if (!(updaterFolder.isDirectory() && updaterFolder.exists())) {
-			log.log(Level.SEVERE, "GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
-			throw new Exception("GeonameUpdater Error: Updater Directory is invalid: "+updaterDir);
-		}
-		try {
-			ProcessBuilder pb = new ProcessBuilder("java", "-Xmx4G", "-Xms1G", "-jar", updaterDir+"gbmetadataupdater.jar").inheritIO().directory(updaterFolder);
-			File geonameUpdaterLog = new File("gb_updater.log");
-			pb.redirectOutput(Redirect.appendTo(geonameUpdaterLog));
-			pb.redirectError(Redirect.appendTo(geonameUpdaterLog));
-			log.info("Starting Process: "+pb.command().toString());
-			Process pr = pb.start();
-			pr.waitFor();
-			if (pr.exitValue() != 0) {
-				log.log(Level.SEVERE, "GeonameUpdater failed! with code: "+pr.exitValue());
-				throw new Exception("GeonameUpdater failed! with code: "+pr.exitValue());
-			}
-			log.info("Geoname Updater Complete");
-		}
-		catch (Exception e) {
-			log.log(Level.SEVERE, "GeonameUpdater Error: "+e.getMessage());
-			throw e;
 		}
 	}
 	

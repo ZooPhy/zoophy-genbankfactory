@@ -55,6 +55,11 @@ public class Indexer {
 	private final static String UPDATE_GEONAME_IDS = "UPDATE \"Location_Geoname\" SET \"Geoname_ID\"=? WHERE \"Accession\"=?";
 	private final static String UPDATE_GEONAME_TYPES = "UPDATE \"Location_Geoname\" SET \"Type\"=? WHERE \"Accession\"=?";
 	private final static String UPDATE_GEONAME_COUNTRIES = "UPDATE \"Location_Geoname\" SET \"Country\"=? WHERE \"Accession\"=?";
+	// Constants
+	private final static String DATE_UNKNOWN = "10000101";
+	private final static String FIELD_UNKNOWN = "Unknown"; 
+	private final static String FIELD_UNAVAILABLE = "n/a";
+	
 	private DBQuery updateGeonameIDsQuery;
 	private DBQuery updateGeonameTypesQuery;
 	private DBQuery updateGeonameCountriesQuery;
@@ -169,7 +174,6 @@ public class Indexer {
 	 * @throws IndexerException
 	 */
 	protected Document createDocument(GenBankRecord record, GenBankTree gbTree, GeoNameTree geoTree) throws IndexerException {
-		doc = null;
 		doc = new Document();
 		setAccession(record);//TODO: marker for this function//
 		setOrganism(record, gbTree);
@@ -177,26 +181,42 @@ public class Indexer {
 			setDate(record);
 		}
 		else {
-			doc.add(new StringField("Date", "10000101", Field.Store.YES));
+			doc.add(new StringField("Date", DATE_UNKNOWN , Field.Store.YES));
+		}
+		// add normalized date
+		if (record.getSequence().getNormalizaed_date() != null) {
+			doc.add(new StringField("NormalizedDate", formatNormalizedDate(record), Field.Store.YES));
+		}
+		else {
+			doc.add(new StringField("Date", DATE_UNKNOWN, Field.Store.YES));
 		}
 		setHost(record, gbTree);
 		if (record.getGenBankLocation() != null) {
 			setGeographicLocation(record, geoTree);
 		}
 		else {
-			doc.add(new TextField("Location", "Unknown", Field.Store.YES));
-			doc.add(new StringField("Country", "Unknown", Field.Store.YES));
-			doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
+			doc.add(new StringField("Country", FIELD_UNKNOWN, Field.Store.YES));
+			doc.add(new StringField("CountryCode", FIELD_UNKNOWN, Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
-			doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
+			doc.add(new StringField("LocationType",FIELD_UNKNOWN, Field.Store.YES));
 			unknownLocs++;
 		}
+		// adding state field
+		if (record.getGenBankLocation().getState() != null) {
+			doc.add(new StringField("State", record.getGenBankLocation().getState(), Field.Store.YES)) ;
+		}
+		else {
+			doc.add(new StringField("State", FIELD_UNKNOWN, Field.Store.YES));
+		}
+				
 		if (record.getSequence().getPub() != null) {
 			doc.add(new StringField("PubmedID", String.valueOf(record.getSequence().getPub().getPubId()), Field.Store.YES));
 		}
 		else {
-			doc.add(new StringField("PubmedID", "n/a", Field.Store.YES));
+			doc.add(new StringField("PubmedID", FIELD_UNAVAILABLE, Field.Store.YES));
 		}
+			
 		return doc;
 	}
 	
@@ -212,19 +232,19 @@ public class Indexer {
 			doc.add(new TextField("Organism", record.getSequence().getOrganism(), Field.Store.YES));
 		}
 		else {
-			doc.add(new TextField("Organism", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Organism", FIELD_UNKNOWN, Field.Store.YES));
 		}
 		if (record.getSequence().getStrain() != null) {
 			doc.add(new TextField("Strain", record.getSequence().getStrain(), Field.Store.YES));
 		}
 		else {
-			doc.add(new TextField("Strain", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Strain",FIELD_UNKNOWN, Field.Store.YES));
 		}
 		if (record.getSequence().getDefinition() != null) {
 			doc.add(new TextField("Definition", record.getSequence().getDefinition(), Field.Store.YES));
 		}
 		else {
-			doc.add(new TextField("Definition", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Definition",FIELD_UNKNOWN, Field.Store.YES));
 		}
 		String segmentLength = String.valueOf(record.getSequence().getSegment_length());
 		while (segmentLength.length() < 5) {
@@ -306,7 +326,7 @@ public class Indexer {
 			doc.add(new TextField("Host_Name", record.getHost().getName().toLowerCase(), Field.Store.YES));
 		}
 		else {
-			doc.add(new TextField("Host_Name", "Unknown".toLowerCase(), Field.Store.YES));
+			doc.add(new TextField("Host_Name", FIELD_UNKNOWN.toLowerCase(), Field.Store.YES));
 		}
 		if (record.getHost().getTaxon() <= 1 || record.getHost().getName() == null) {
 			doc.add(new StringField("HostID", gbTree.getRoot().getID().toString(), Field.Store.YES));
@@ -400,7 +420,7 @@ public class Indexer {
 						doc.add(new TextField("Location", g.getConcept(), Field.Store.YES));
 					}
 					else {
-						doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+						doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
 					}
 					if (g.getLocation() != null) {
 						country_code = g.getLocation().getCountry();
@@ -417,13 +437,13 @@ public class Indexer {
 							}
 						}
 						else {
-							doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
+							doc.add(new StringField("LocationType", FIELD_UNKNOWN, Field.Store.YES));
 						}
 					}
 					else {
 						doc.add(new StringField("Latitude", String.valueOf(0.0), Field.Store.YES));
 						doc.add(new StringField("Longitude", String.valueOf(0.0), Field.Store.YES));
-						doc.add(new StringField("LocationType", "Unknown", Field.Store.YES));
+						doc.add(new StringField("LocationType", FIELD_UNKNOWN, Field.Store.YES));
 					}
 					if (g != (GeoNameNode) geoTree.getRoot() && g.getFather() == null) {
 						g.setFather((GeoNameNode) geoTree.getRoot());
@@ -504,13 +524,13 @@ public class Indexer {
 						doc.add(new TextField("Location", record.getGenBankLocation().getLocation(), Field.Store.YES));
 					}
 					else {
-						doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+						doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
 					}
 					doc.add(new StringField("GeonameID", String.valueOf(id), Field.Store.YES));
 					doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 				}
 				if (country_code == null) {
-					doc.add(new TextField("Country", "Unknown", Field.Store.YES));
+					doc.add(new TextField("Country", FIELD_UNKNOWN, Field.Store.YES));
 				}
 				else {
 					try {
@@ -536,16 +556,18 @@ public class Indexer {
 					doc.add(new TextField("Location", record.getGenBankLocation().getLocation(), Field.Store.YES));
 				}
 				else {
-					doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+					doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
 				}
-				doc.add(new StringField("CountryCode", "Unknown", Field.Store.YES));
-				doc.add(new TextField("Country", "Unknown", Field.Store.YES));
+				doc.add(new StringField("CountryCode", FIELD_UNKNOWN, Field.Store.YES));
+				doc.add(new TextField("Country", FIELD_UNKNOWN, Field.Store.YES));
 				doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 			}
+			
+			
 		}
 		catch (Exception e) {
 			log.log(Level.SEVERE, "Error indexing location for Geoname id: " + id + " " + e.getMessage());
-			doc.add(new TextField("Location", "Unknown", Field.Store.YES));
+			doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(id), Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
 		}
@@ -703,6 +725,56 @@ public class Indexer {
 			}
 			catch (Exception e) {
 				log.log(Level.SEVERE, "Impossible to format the date [" + record.getSequence().getCollection_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
+			}
+		}
+		return "10000101";
+	}
+	protected String formatNormalizedDate(GenBankRecord record) {
+		if (record.getSequence().getNormalizaed_date() != null) {
+			try {
+				String date = record.getSequence().getNormalizaed_date().trim();
+				if (date.matches("[0-9]{4}")) {
+					return DateTools.dateToString(DateTools.stringToDate(date),Resolution.YEAR);
+				}
+				if (date.matches("[0-9]{1,2}-[A-Za-z]{3}-[0-9]{2}")) {
+					String[] dateComponents = record.getSequence().getNormalizaed_date().trim().split("-");
+					if (dateComponents[0].length()==1) {
+						dateComponents[0] = "0"+dateComponents[0];
+					}
+					Integer year = new Integer(dateComponents[2]);
+					if (year > 16 && year < 100) {
+						dateComponents[2] = "19"+dateComponents[2];
+					}
+					else if (year <= 16) {
+						dateComponents[2] = "20"+dateComponents[2];
+					}
+					return DateTools.dateToString(DateTools.stringToDate(getYear(dateComponents[2])+getMonth(dateComponents[1])+getDay(dateComponents[0])),Resolution.DAY);
+				}
+				if (date.matches("[A-Za-z]{3}-[0-9]{2}")) {
+					String[] dateComponents = record.getSequence().getNormalizaed_date().trim().split("-");
+					Integer year = new Integer(dateComponents[1]);
+					if (year>16 && year < 100) {
+						dateComponents[1] = "19"+dateComponents[1];
+					}
+					else if (year <= 16) {
+						dateComponents[1] = "20"+dateComponents[1];
+					}
+					return DateTools.dateToString(DateTools.stringToDate(getYear(dateComponents[1])+getMonth(dateComponents[0])),Resolution.MONTH);
+				}
+				if (date.matches("[A-Za-z]{3}-[0-9]{4}")) {
+					String[] dateComponents = record.getSequence().getNormalizaed_date().trim().split("-");
+					return DateTools.dateToString(DateTools.stringToDate(getYear(dateComponents[1])+getMonth(dateComponents[0])),Resolution.MONTH);
+				}
+				if (date.matches("[0-9]{1,2}-[A-Za-z]{3}-[0-9]{4}")) {
+					String[] dateComponents = record.getSequence().getNormalizaed_date().trim().split("-");
+					if(dateComponents[0].length()==1) {
+						dateComponents[0] = "0"+dateComponents[0];
+					}
+					return DateTools.dateToString(DateTools.stringToDate(getYear(dateComponents[2])+getMonth(dateComponents[1])+getDay(dateComponents[0])),Resolution.DAY);
+				}
+			}
+			catch (Exception e) {
+				log.log(Level.SEVERE, "Impossible to format the date [" + record.getSequence().getNormalizaed_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
 			}
 		}
 		return "10000101";

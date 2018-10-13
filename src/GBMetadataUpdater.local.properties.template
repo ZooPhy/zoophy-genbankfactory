@@ -1,0 +1,12 @@
+#Connection to the DB of the corpus to process
+annotation.DB.Name=GenBankViruses_Testing
+#annotation.DB.Name=PhylogeographyDisambiguationOnly
+#annotation.DB.Name=PhylogeographyDetectionForEndToEnd
+#annotation.DB.Name=PhylogeographySegmented
+annotation.DB.Host=zodo.asu.edu
+#annotation.DB.User=dweissen
+#annotation.DB.PW=
+annotation.DB.User=
+annotation.DB.PW=
+annotation.DB.dbDriver=postgresql
+

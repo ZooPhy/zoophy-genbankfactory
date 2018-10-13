@@ -47,7 +47,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String RETRIEVE_GENBANK_LOCATION = "SELECT * FROM \"Location_GenBank\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_GEONAME_LOCATION = "SELECT * FROM \"Location_Geoname\" WHERE \"Accession\"=?";
 	private final String RETRIEVE_PUBLICATION = "SELECT * FROM \"Publication\" JOIN \"Sequence_Publication\" ON (\"Publication\".\"Pubmed_ID\" = \"Sequence_Publication\".\"Pub_ID\") WHERE \"Accession\"=?";
-	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"pH1N1\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
+	private final String RETRIEVE_INDEX_RECORDS_BATCH = "SELECT \"Sequence_Details\".\"Accession\", \"Collection_Date\",\"Normalized_Date\", \"Definition\", \"Tax_ID\", \"Organism\", \"Strain\", \"pH1N1\", \"Host_Name\", \"Host_taxon\", \"Geoname_ID\", \"Location\",\"Type\",\"Country\",\"State\",\"Pub_ID\",\"Segment_Length\" FROM \"Sequence_Details\" JOIN \"Host\" ON \"Sequence_Details\".\"Accession\"=\"Host\".\"Accession\" JOIN \"Location_Geoname\" ON \"Sequence_Details\".\"Accession\"=\"Location_Geoname\".\"Accession\" LEFT JOIN \"Sequence_Publication\" ON \"Sequence_Details\".\"Accession\"=\"Sequence_Publication\".\"Accession\" JOIN \"Sequence\" ON \"Sequence_Details\".\"Accession\"=\"Sequence\".\"Accession\" ORDER BY \"Accession\" ASC LIMIT ? OFFSET ?";
 	private final String RETRIEVE_INDEX_GENES = "SELECT \"Normalized_Gene_Name\" FROM \"Gene\" WHERE \"Accession\"=?";
 	
 	//Query objects defined in Davy's WipeFinder project//
@@ -542,6 +542,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			seq.setItv_from(rs.getInt("Itv_From"));
 			seq.setItv_to(rs.getInt("Itv_To"));
 			seq.setPH1N1(rs.getBoolean("pH1N1"));
+			seq.setNormalizaed_date(rs.getString("Normalized_Date"));
 			rs.close();
 		}
 		catch (Exception e) {
@@ -671,6 +672,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				genBankLoc.setLongitude(rs.getDouble("Longitude"));
 				genBankLoc.setType(rs.getString("Type"));
 				genBankLoc.setCountry(rs.getString("Country"));
+				genBankLoc.setCountry(rs.getString("State"));
 			}
 			rs.close();
 		}
@@ -890,6 +892,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				rec.setAccession(accession);
 				Sequence seq = new Sequence();
 				seq.setCollection_date(rs.getString("Collection_Date"));
+				seq.setNormalizaed_date(rs.getString("Normalized_Date"));
 				seq.setDefinition(rs.getString("Definition"));
 				seq.setTax_id(rs.getInt("Tax_ID"));
 				seq.setOrganism(rs.getString("Organism"));
@@ -913,6 +916,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					loc.setLocation(rs.getString("Location"));
 					loc.setType(rs.getString("Type"));
 					loc.setCountry(rs.getString("Country"));
+					loc.setState(rs.getString("State"));
 					rec.setGenBankLocation(loc);
 				}
 				records.add(rec);

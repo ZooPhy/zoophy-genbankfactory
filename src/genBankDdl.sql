@@ -10,6 +10,7 @@ CREATE TABLE "Sequence_Details" (
   "Itv_To" integer NOT NULL,
   "Comment" text,
   "pH1N1" boolean NOT NULL DEFAULT false, -- True if it is an Influenza A pH1N1 strain.
+  "Normalized_Date" text,
   CONSTRAINT "Accession_PKey" PRIMARY KEY ("Accession")
 )
 WITH (
@@ -148,6 +149,7 @@ CREATE TABLE "Location_Geoname" (
   "Longitude" real,
   "Type" text,
   "Country" text,
+  "State" text,
   CONSTRAINT geoname_accession_fkey FOREIGN KEY ("Accession")
       REFERENCES "Sequence_Details" ("Accession") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
