@@ -6,7 +6,7 @@ public class InferenceEngine {
 		try {
 			System.out.println("hello!");
 		}catch(Exception e) {
-//			log.log(Level.SEVERE, "ERROR running GenBankFactory: " + e.getMessage());
+//			log.fatal( "ERROR running GenBankFactory: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
 		}

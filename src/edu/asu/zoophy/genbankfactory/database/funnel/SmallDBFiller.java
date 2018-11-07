@@ -3,7 +3,7 @@ package edu.asu.zoophy.genbankfactory.database.funnel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.database.GenBankRecord;

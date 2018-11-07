@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * This object open the properties file and distribute the properties on request
@@ -82,14 +82,14 @@ public class PropertiesProvider {
 			this.table.load(is);
 			log.info("Properties File [" + properties_file + "] was loaded successfully");
 		} catch (Exception e) {
-			log.log(Level.SEVERE,
+			log.fatal(
 					"Properties File [" + properties_file + "] was not loaded properly: " + e.getMessage());
 			throw e;
 		} finally {
 			try {
 				is.close();
 			} catch (IOException e) {
-				log.log(Level.SEVERE,
+				log.fatal(
 						"Impossible to close the properties file [" + properties_file + "]:" + e.getMessage());
 				return;
 			}
@@ -100,7 +100,7 @@ public class PropertiesProvider {
 		if (this.table.containsKey(property)) {
 			return this.table.getProperty(property);
 		} else {
-			log.warning("The property value [" + property + "] asked in the properties file [" + properties_file
+			log.warn("The property value [" + property + "] asked in the properties file [" + properties_file
 					+ "] is missing.");
 			return null;
 		}
@@ -121,7 +121,7 @@ public class PropertiesProvider {
 			Object elementKey = keys.nextElement();
 			// check if the elementKey exist in the current Properties Provider
 			if (this.table.containsKey(elementKey)) {
-				log.warning("The property [" + elementKey.toString() + "->" + pp.getValue((String) elementKey)
+				log.warn("The property [" + elementKey.toString() + "->" + pp.getValue((String) elementKey)
 						+ "] already exist in the Property Provider, the old value [" + getValue((String) elementKey)
 						+ "] is kept.");
 			} else {

@@ -6,8 +6,8 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
@@ -49,7 +49,7 @@ public class PredictorInserter {
     			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
     	    }
     	    catch (Exception e) {
-    	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+    	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
     	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
     	    }
     		query = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, INSERT_PREDICTORS);
@@ -68,7 +68,7 @@ public class PredictorInserter {
     					value = Double.parseDouble(state.get(i));
     				}
     				catch (Exception e) {
-    					log.warning("Non numberic value: "+state.get(i));
+    					log.warn("Non numberic value: "+state.get(i));
     					value = null;
     				}
     				addPredictorBatch(uspsCode,stateName,key,value,year);
@@ -82,7 +82,7 @@ public class PredictorInserter {
     		log.info("finished insterting to DB");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "ERROR inserting predictors " + e.getMessage());
+			log.fatal( "ERROR inserting predictors " + e.getMessage());
 		}
 	}
 

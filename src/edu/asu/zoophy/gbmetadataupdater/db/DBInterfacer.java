@@ -42,11 +42,11 @@ public class DBInterfacer {
 		try 
 		{
 			Class.forName("org.postgresql.Driver");
-			String dbDriver = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("annotation.DB.dbDriver");
+			//String dbDriver = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("annotation.DB.dbDriver");
 			log.info("=> Open a connection on a Postgresql DataBase.");
 			c = DriverManager.getConnection("jdbc:postgresql://"+Host+"/"+Name, User, PW);
 			if (c != null)
-				log.info("DB Connected.");
+				log.info("DB Connected: " + Host + "/" + Name+ " " + User );
 			else
 			{
 				log.error("The connection handle is null...");

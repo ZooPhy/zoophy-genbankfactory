@@ -4,8 +4,8 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -129,7 +129,7 @@ public class VirusFunnel {
 			funnelled = 0;
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "ERROR funneling viruses to small DB: "+e.getMessage());
+			log.fatal( "ERROR funneling viruses to small DB: "+e.getMessage());
 			throw e;
 		}
 		finally {

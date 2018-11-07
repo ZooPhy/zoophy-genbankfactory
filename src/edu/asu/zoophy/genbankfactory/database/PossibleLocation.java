@@ -9,6 +9,7 @@ public class PossibleLocation {
 	private long id;
 	//foreign key for the GenBank record//
 	private String accession;
+	private int geonameId;
 	private String location;
 	private double latitude;
 	private double longitude;
@@ -94,5 +95,14 @@ public class PossibleLocation {
 	public void setState(String state) {
 		this.state = state;
 	}
+
+	public int getGeonameId() {
+		return geonameId;
+	}
+
+	public void setGeonameId(int geonameId) {
+		this.geonameId = geonameId;
+	}
+	
 	
 }

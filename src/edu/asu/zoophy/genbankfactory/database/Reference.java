@@ -2,8 +2,8 @@ package edu.asu.zoophy.genbankfactory.database;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 
 /**
@@ -30,7 +30,7 @@ public class Reference {
 	{
 		accession = pAccession;
 		if(!components.get(0).matches("REFERENCE   [0-9]+.*")) {
-			log.log(Level.SEVERE, "Apparently the REFERENCE is not in the format expected, first line incorrect: "+components.get(0));
+			log.fatal( "Apparently the REFERENCE is not in the format expected, first line incorrect: "+components.get(0));
 		}
 		else {
 			int index = 1;
@@ -71,7 +71,7 @@ public class Reference {
 		else if(element.get(0).startsWith("  MEDLINE")){//don't do anything for that
 		}
 		else{
-			log.log(Level.SEVERE, "Unknown subection in the Reference, add the code to handle it if needed: "+element.get(0).substring(0, 12));
+			log.fatal( "Unknown subection in the Reference, add the code to handle it if needed: "+element.get(0).substring(0, 12));
 		}
 	}
 	protected void processAuthors(List<String> element){
@@ -110,7 +110,7 @@ public class Reference {
 		try {
 			pubmed = Integer.valueOf(out.toString());
 		}catch (NumberFormatException e){
-			log.log(Level.SEVERE, "Impossible to convert the Pubmed ID in the line ["+element.get(0)+"] for accession ["+accession+"]");
+			log.fatal( "Impossible to convert the Pubmed ID in the line ["+element.get(0)+"] for accession ["+accession+"]");
 		}
 	}
 	public Reference(String accession){

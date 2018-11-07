@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.GenBankTree;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
@@ -40,7 +40,7 @@ public class ProductChecker {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch (Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 	}
@@ -66,7 +66,7 @@ public class ProductChecker {
 				log.info("checked: "+acc);
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Error checking the product for "+acc+": "+e.getMessage());
+				log.fatal( "Error checking the product for "+acc+": "+e.getMessage());
 			}
 		}
 		accs.clear();

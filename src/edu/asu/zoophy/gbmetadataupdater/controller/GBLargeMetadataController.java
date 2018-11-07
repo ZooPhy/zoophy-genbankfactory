@@ -72,6 +72,7 @@ public class GBLargeMetadataController implements ControllerInt {
 			query2 = new DBQuery(ResourceProvider.getDBInterfacer(RP_PROVIDED_RESOURCES.ANNOTATION_DBI).getConnection(), DBQuery.QT_SELECT_MULTIPLE_ROWS, SELECT_COUNTRY, queryParams2);
 			//query for updating the geospatial metadata of a record given it's accession number
 			query3 = new DBQuery(ResourceProvider.getDBInterfacer(RP_PROVIDED_RESOURCES.ANNOTATION_DBI).getConnection(), DBQuery.QT_INSERT_BATCH, INSERT_METADATA);
+			log.info("query: "+ query.toString());
 			result = query.executeSelect_MultiRows();
 			int numTotal = 0;
 			if(result.next()) {

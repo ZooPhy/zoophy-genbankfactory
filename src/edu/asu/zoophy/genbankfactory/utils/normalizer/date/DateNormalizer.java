@@ -5,8 +5,8 @@ import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
@@ -32,7 +32,7 @@ public class DateNormalizer {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch (Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 	}
@@ -50,7 +50,7 @@ public class DateNormalizer {
 			updateDates();
 		} 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Failed Date Normalization: "+e.getMessage());
+			log.fatal( "Failed Date Normalization: "+e.getMessage());
 		}
 	}
 	
