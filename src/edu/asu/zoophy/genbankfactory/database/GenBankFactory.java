@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -80,7 +80,7 @@ public class GenBankFactory {
 				instance = new GenBankFactory();
 			} 
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Couldn't get a Factory instance ):");
+				log.fatal( "Couldn't get a Factory instance ):");
 			}
 		}
 		return instance;
@@ -92,14 +92,14 @@ public class GenBankFactory {
 		log.info("GenBank Factory Starting...");
 	    try {
 	    	Provider = new ResourceProvider();
-	    	PropertiesProvider pp = new PropertiesProvider("GenBankFactory.local.properties");
+	    	PropertiesProvider pp = new PropertiesProvider("./GenBankFactory.local.properties");
 	    	Provider.addResource(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER, pp);
 	    	dbManager = new DBManager();
 	    	Provider.addResource("DBGenBank", dbManager);
 	    	loadProperties();
 	    }
 	    catch(Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 		log.info("GenBank Factory Instantiate.");
@@ -139,6 +139,9 @@ public class GenBankFactory {
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
 			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
+			String geoNamesIndexDirectory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.index.location");
+			String geoNamesMappingFile = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.mapping.file");
+			
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -161,9 +164,11 @@ public class GenBankFactory {
 			properties.put("SmallIndex", smallIndex);
 			properties.put("PH1N1List", pH1N1List);
 			properties.put("predictor.csv", predictorCSV);
+			properties.put("GeoNamesIndexDir", geoNamesIndexDirectory);
+			properties.put("GeoNamesMappingFile", geoNamesMappingFile);
 		} 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "error getting properties file");
+			log.fatal( "error getting properties file");
 			e.printStackTrace();
 		}
 	}
@@ -204,7 +209,7 @@ public class GenBankFactory {
 			    }
 			}
 			catch(Exception e) {
-				log.log(Level.SEVERE, "Impossible to find/process the dump from local file: "+e.getMessage());
+				log.fatal( "Impossible to find/process the dump from local file: "+e.getMessage());
 				throw new Exception("Impossible to find/process the dump from local file: "+e.getMessage());
 			}
 		}
@@ -238,11 +243,11 @@ public class GenBankFactory {
 				deleteCSV();
 			} 
 			catch (IOException e) {
-				log.log(Level.SEVERE, "IOException in getFiles(): "+e.getMessage());
+				log.fatal( "IOException in getFiles(): "+e.getMessage());
 				throw new Exception("IOException in getFiles(): "+e.getMessage());
 			} 
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Unexpected error occurred when processing the dump of GenBank from the server: "+e.getMessage());
+				log.fatal( "Unexpected error occurred when processing the dump of GenBank from the server: "+e.getMessage());
 				throw new Exception("Unexpected error occurred when processing the dump of GenBank from the server: "+e.getMessage());
 			}
 			finally {
@@ -251,7 +256,7 @@ public class GenBankFactory {
 		}
 		log.info("Proccessed " + recordsProcessed + " records out of " + recordsAvailable + " given records.");
 		if (recordsProcessed != recordsAvailable) {
-			log.log(Level.SEVERE, "ERROR!!! MISSING " + (recordsAvailable-recordsProcessed) + " RECORDS IN TOTAL!!!");
+			log.fatal( "ERROR!!! MISSING " + (recordsAvailable-recordsProcessed) + " RECORDS IN TOTAL!!!");
 		}
 		else {
 			log.info("SUCCESSFULLY PROCESSED EVERY RECORD FROM GIVEN DATA DUMP FILES");
@@ -299,7 +304,7 @@ public class GenBankFactory {
 			log.info("Deleted " + name + ".zip");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error extracting " + name + ": " + e.getMessage());
+			log.fatal( "Error extracting " + name + ": " + e.getMessage());
 		}
 	}
 	
@@ -324,7 +329,7 @@ public class GenBankFactory {
 	        log.info("Finished Downloading" + filename);
 	    }
 	    catch (IOException e) {
-	    	log.log(Level.SEVERE, "IOException when downloading " + filename + ": " + e.getMessage());
+	    	log.fatal( "IOException when downloading " + filename + ": " + e.getMessage());
 		}
 	}
 
@@ -373,7 +378,7 @@ public class GenBankFactory {
 	        log.info("Deleted PMC-ids.csv.gz");
 	    } 
 	    catch (IOException e) {
-	    	log.log(Level.SEVERE, "IOException when downloading PMC-ids.csv: " + e.getMessage());
+	    	log.fatal( "IOException when downloading PMC-ids.csv: " + e.getMessage());
 		}
 	}
 	
@@ -416,7 +421,7 @@ public class GenBankFactory {
 	        fout.close();
 	    } 
 	    catch (IOException e) {
-	    	log.log(Level.SEVERE, "IOException when downloading " + filename);
+	    	log.fatal( "IOException when downloading " + filename);
 		}
 	}
 	
@@ -434,7 +439,7 @@ public class GenBankFactory {
 			log.info("Successfully deleted " + filename);
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Could not delete" + filename);
+			log.fatal( "Could not delete" + filename);
 		}
 	}
 	
@@ -466,14 +471,14 @@ public class GenBankFactory {
 			recordsProcessed += processedRecords.size();
 			recordsAvailable += avail;
 			if (avail != processedRecords.size()) {
-				log.log(Level.SEVERE, "ERROR!!! MISSING " + (avail-processedRecords.size()) + " RECORDS!!!");
+				log.fatal( "ERROR!!! MISSING " + (avail-processedRecords.size()) + " RECORDS!!!");
 			}
 		} 
 		catch (IOException e) {
-			log.log(Level.SEVERE, "IOException reading GZIP header: " + e.getMessage());
+			log.fatal( "IOException reading GZIP header: " + e.getMessage());
 		}
 		catch(Exception e){
-			log.log(Level.SEVERE, "Unexpected error when reading the file: "+e.getMessage());
+			log.fatal( "Unexpected error when reading the file: "+e.getMessage());
 		}
 		finally {
 			if(buffered!=null) {
@@ -481,7 +486,7 @@ public class GenBankFactory {
 					buffered.close();
 				} 
 				catch (IOException e) {
-					log.log(Level.SEVERE, "Impossible to close the file ["+filename+"]: "+e.getMessage());
+					log.fatal( "Impossible to close the file ["+filename+"]: "+e.getMessage());
 				}
 			}
 		}
@@ -548,7 +553,7 @@ public class GenBankFactory {
 	}
 	
 	public void switchDB(String newDB) throws Exception {
-		log.warning("Switching to new DB: "+newDB);
+		log.warn("Switching to new DB: "+newDB);
 		dbManager.connectToNewDB(newDB);
 	}
 	

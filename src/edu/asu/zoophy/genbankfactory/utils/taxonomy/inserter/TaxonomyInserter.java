@@ -18,8 +18,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -52,7 +52,7 @@ public class TaxonomyInserter  {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch(Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 		try {
@@ -63,7 +63,7 @@ public class TaxonomyInserter  {
 			brDivision 	= new BufferedReader(new FileReader(pathDumpFiles+"division.dmp"));
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error occured when reading the directory containing the files of the dump: "+e.getMessage());
+			log.fatal( "Error occured when reading the directory containing the files of the dump: "+e.getMessage());
 			throw new Exception("Error occured when reading the directory containing the files of the dump: "+e.getMessage());
 		}
 	}
@@ -106,7 +106,7 @@ public class TaxonomyInserter  {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error occured when reading the division of the taxonomy in the DB: "+e.getMessage());
+			log.fatal( "Error occured when reading the division of the taxonomy in the DB: "+e.getMessage());
 			throw new Exception("Error occured when reading the division of the taxonomy in the DB: "+e.getMessage());
 		}
 		//now we insert the concepts
@@ -131,7 +131,7 @@ public class TaxonomyInserter  {
 			log.info("=> Inserted.");
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Impossible to insert the division ["+count+"] in the DB: "+e.getMessage());
+			log.fatal( "Impossible to insert the division ["+count+"] in the DB: "+e.getMessage());
 			throw new Exception("Impossible to insert the division ["+count+"] in the DB: "+e.getMessage());
 		}
 		finally {
@@ -140,7 +140,7 @@ public class TaxonomyInserter  {
 					stm.close();
 			} 
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
+				log.fatal( "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
 			}
 		}		
 	}
@@ -165,7 +165,7 @@ public class TaxonomyInserter  {
 			}
 		}
 		catch (Exception e){
-			log.log(Level.SEVERE, "Error occured when reading the tree of the taxonomy in the DB: "+e.getMessage());
+			log.fatal( "Error occured when reading the tree of the taxonomy in the DB: "+e.getMessage());
 			throw new Exception("Error occured when reading the tree of the taxonomy in the DB: "+e.getMessage());
 		}
 		//now we insert the concepts
@@ -192,7 +192,7 @@ public class TaxonomyInserter  {
 			log.info("=> Inserted.");
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Impossible to insert the node of tree ["+count+"] in the DB: "+e.getMessage());
+			log.fatal( "Impossible to insert the node of tree ["+count+"] in the DB: "+e.getMessage());
 			throw new Exception("Impossible to insert the node of tree ["+count+"] in the DB: "+e.getMessage());
 		}
 		finally {
@@ -201,7 +201,7 @@ public class TaxonomyInserter  {
 					stm.close();
 			} 
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
+				log.fatal( "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
 			}
 		}		
 	}
@@ -230,7 +230,7 @@ public class TaxonomyInserter  {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error occured when reading the names of the concepts in the DB: "+e.getMessage());
+			log.fatal( "Error occured when reading the names of the concepts in the DB: "+e.getMessage());
 			throw new Exception("Error occured when reading the names of the concepts in the DB: "+e.getMessage());
 		}
 		//now we insert the concepts
@@ -256,7 +256,7 @@ public class TaxonomyInserter  {
 			log.info("=> Inserted.");
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Impossible to insert the concept ["+count+"] in the DB: "+e.getMessage());
+			log.fatal( "Impossible to insert the concept ["+count+"] in the DB: "+e.getMessage());
 			throw new Exception("Impossible to insert the concept ["+count+"] in the DB: "+e.getMessage());
 		}
 		finally {
@@ -265,7 +265,7 @@ public class TaxonomyInserter  {
 					stm.close();
 			} 
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
+				log.fatal( "Error occurs when closing the resources taken on the genbank DB, nothing done: "+e.getMessage());
 			}
 		}		
 	}
@@ -316,7 +316,7 @@ public class TaxonomyInserter  {
 	        log.info("Deleted taxdump.tar.gz");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Failed to download new Taxonomy files: "+e.getMessage());
+			log.fatal( "Failed to download new Taxonomy files: "+e.getMessage());
 			throw e;
 		}
 	}

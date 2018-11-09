@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.utils.pmcid.PmidPmcidMapperInt;
 
@@ -45,7 +45,7 @@ public class GenBankRecordParser {
 		index++;
 		}
 		if(indexFeatures==null||indexOrigin==null) {
-			log.warning("I found a GBRecord without Origin or Features section: "+this.toString());
+			log.warn("I found a GBRecord without Origin or Features section: "+this.toString());
 		}
 		processLocus(0, (indexFeatures - 1));
 		if (indexOrigin != null) {
@@ -104,7 +104,7 @@ public class GenBankRecordParser {
 			case "KEYWORDS"://don't do anything for this entry, to change if they have to be processed
 				break;
 			default:
-				log.log(Level.FINE, "Find another Key in the Locus section, unprocessed: "+components[0]);
+				log.info( "Find another Key in the Locus section, unprocessed: "+components[0]);
 				break;
 		}
 	}
@@ -124,7 +124,7 @@ public class GenBankRecordParser {
 	 */
 	protected void processReference(List<String> components) {
 		if(!(components.get(0).startsWith("REFERENCE   ") && components.size()>2 && mapInformation.get("ACCESSION")!=null)){
-			log.log(Level.SEVERE, "Apparently I have an REFERENCE line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());
+			log.fatal( "Apparently I have an REFERENCE line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());
 		}
 		else {
 			Reference ref = new Reference(mapInformation.get("ACCESSION"), components);
@@ -135,14 +135,14 @@ public class GenBankRecordParser {
 					extractedPub.setCentralId(mapper.getPMCID(String.valueOf(extractedPub.getPubmedId())));
 				}
 				catch (Exception e) {
-					log.log(Level.SEVERE, "Error pulling PMCID: " + e.getMessage());
+					log.fatal( "Error pulling PMCID: " + e.getMessage());
 				}
 				if (ref.getAuthors() != null) {
 					extractedPub.setAuthors(ref.getAuthors());
 				}
 				else {
 					extractedPub.setAuthors("Unknown");
-					log.warning("Pubmed " + extractedPub.getPubmedId() + " does not have Authors listed.");
+					log.warn("Pubmed " + extractedPub.getPubmedId() + " does not have Authors listed.");
 				}
 				extractedPub.setJournal(ref.getJournal());
 				extractedPub.setTitle(ref.getTitle());
@@ -156,7 +156,7 @@ public class GenBankRecordParser {
 	 */
 	protected void processSource(List<String> components) {
 		if(!(components.get(0).startsWith("SOURCE      ") && components.size()>2)) {
-			log.log(Level.SEVERE, "Apparently I have an SOURCE line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());
+			log.fatal( "Apparently I have an SOURCE line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());
 		}
 		else {//first we loop for the source then for the organism 
 			StringBuilder source = new StringBuilder();
@@ -174,7 +174,7 @@ public class GenBankRecordParser {
 			//we found the Source, we search for the ORGANISM under it
 			StringBuilder organism = new StringBuilder();
 			if(index>=components.size()) {
-				log.log(Level.SEVERE, "Apparently I don't have an ORGANISM section in the SOURCE header: "+this.toString());
+				log.fatal( "Apparently I don't have an ORGANISM section in the SOURCE header: "+this.toString());
 			}
 			else{
 				organism.append(components.get(index).substring(12));
@@ -191,7 +191,7 @@ public class GenBankRecordParser {
 	}
 	protected void processDefinition(List<String> components) {
 		if(!components.get(0).startsWith("DEFINITION  ")) {
-			log.log(Level.SEVERE, "Apparently I have an DEFINITION line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());			
+			log.fatal( "Apparently I have an DEFINITION line with a different format than the one expected ["+components.get(0)+"]: "+this.toString());			
 		}
 		else {
 			StringBuilder out = new StringBuilder();
@@ -209,7 +209,7 @@ public class GenBankRecordParser {
 //A finir verifier que les features soient tous et bien parser, gerer les records avec de multiples source sections quoi en faire, et enfin inserer les section dans la DB	
 	protected void processAccession(List<String> accession) {
 		if(!accession.get(0).startsWith("ACCESSION   ")) {//I keep them, if we don't want add the separation here.
-			log.log(Level.SEVERE, "Apparently I have an accession line with a different format than the one expected ["+accession.size()+"]: "+this.toString());
+			log.fatal( "Apparently I have an accession line with a different format than the one expected ["+accession.size()+"]: "+this.toString());
 		}
 		else {
 			String cleanAccession = accession.get(0).substring(11).trim();
@@ -268,7 +268,7 @@ public class GenBankRecordParser {
 		while(index<locusLines.size()) {
 			String subSequence = locusLines.get(index);
 			if(!subSequence.matches(" *[0-9]+ ([a-z]| )+")) {
-				log.log(Level.SEVERE, "=====> One line in Origin section is incorrectly formatted, continue without: \n"+this.toString());
+				log.fatal( "=====> One line in Origin section is incorrectly formatted, continue without: \n"+this.toString());
 				sequence = null;
 				break;
 			}
@@ -318,7 +318,7 @@ public class GenBankRecordParser {
 					if (feat.getPosition().contains("order")) {//multiple sources//
 						seq.setItv_from(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("(")+1, feat.getPosition().indexOf(".")).trim()));
 						seq.setItv_to(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("..")+2, feat.getPosition().indexOf(",")).trim()));
-						log.warning("Multiple sources for " + seq.getAccession());
+						log.warn("Multiple sources for " + seq.getAccession());
 					}
 					else {//only 1 source//
 						seq.setItv_from(Integer.parseInt(feat.getPosition().substring(0, feat.getPosition().indexOf(".")).trim()));
@@ -367,7 +367,7 @@ public class GenBankRecordParser {
 		}
 		catch (Exception e) {
 			//don't want the whole parser to quit if it finds an error in 1 record//
-			log.log(Level.SEVERE, "ERROR PARSING RECORD" + record.getAccession());
+			log.fatal( "ERROR PARSING RECORD" + record.getAccession());
 		}
 		return record;
 	}
@@ -378,44 +378,44 @@ public class GenBankRecordParser {
 	@SuppressWarnings("unused")
 	private void checkRecord(GenBankRecord record) {
 		if (record.getAccession() == null) {
-			log.log(Level.SEVERE, "NO ACCESSION FOR THIS RECORD??"); 
+			log.fatal( "NO ACCESSION FOR THIS RECORD??"); 
 		}
 		Sequence seq = record.getSequence();
 		if (seq.getDefinition() == null) {
-			log.warning("No DEFINITION for " + seq.getAccession());
+			log.warn("No DEFINITION for " + seq.getAccession());
 		}
 		if (seq.getCollection_date() == null) {
-			log.warning("No COLLECTION_DATE for " + seq.getAccession());
+			log.warn("No COLLECTION_DATE for " + seq.getAccession());
 		}
 		if (seq.getIsolate() == null) {
-			log.warning("No ISOLATE for " + seq.getAccession());
+			log.warn("No ISOLATE for " + seq.getAccession());
 		}
 		if (seq.getOrganism() == null) {
-			log.warning("No ORGANISM for " + seq.getAccession());
+			log.warn("No ORGANISM for " + seq.getAccession());
 		}
 		if (seq.getSequence() == null) {
-			log.warning("No SEQUENCE for " + seq.getAccession());
+			log.warn("No SEQUENCE for " + seq.getAccession());
 		}
 		if (seq.getStrain() == null) {
-			log.warning("No STRAIN for " + seq.getAccession());
+			log.warn("No STRAIN for " + seq.getAccession());
 		}
 		if (seq.getTax_id() == 0) {
-			log.warning("No TAXON_ID for " + seq.getAccession());
+			log.warn("No TAXON_ID for " + seq.getAccession());
 		}
 		if (seq.getItv_from() == 0){
-			log.warning("No ITV_FROM for" + seq.getAccession());
+			log.warn("No ITV_FROM for" + seq.getAccession());
 		}
 		if (seq.getItv_to() == 0){
-			log.warning("No ITV_TO for" + seq.getAccession());
+			log.warn("No ITV_TO for" + seq.getAccession());
 		}
 		if (seq.getPub() == null) {
-			log.warning("No PUBMED for " + seq.getAccession());
+			log.warn("No PUBMED for " + seq.getAccession());
 		}
 		if (record.getHost().getName() == null) {
-			log.warning("No HOST_NAME for " + record.getAccession());
+			log.warn("No HOST_NAME for " + record.getAccession());
 		}
 		if (record.getHost().getTaxon() == 0) {
-			log.warning("No HOST_TAXON for " + record.getAccession());
+			log.warn("No HOST_TAXON for " + record.getAccession());
 		}
 		//add more checks as needed//
 	}

@@ -2,8 +2,8 @@ package jp.ac.toyota_ti.coin.wipefinder.server.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * A convenient class to store and retrieve all resources needed like DB,
@@ -65,7 +65,7 @@ public class ResourceProvider {
 		if (resourcesMap == null)
 			resourcesMap = new HashMap<String, Object>();
 		else
-			log.warning("Another ResourceProvider has been created.");
+			log.warn("Another ResourceProvider has been created.");
 	}
 
 	/**
@@ -77,11 +77,11 @@ public class ResourceProvider {
 	public static PropertiesProvider getPropertiesProvider(String resourceName) {
 		try {
 			if (!resourcesMap.containsKey(resourceName))
-				log.warning("The resource [" + resourceName
+				log.warn("The resource [" + resourceName
 						+ "] doesn't exist in the ResourceProvider, null is returned...");
 			return (PropertiesProvider) resourcesMap.get(resourceName);
 		} catch (Exception e) {
-			log.log(Level.SEVERE,
+			log.fatal(
 					"Error occured when searching for a PropertiesProvider in the ResourceProvider, null is returned: "
 							+ e.getMessage());
 			return null;
@@ -100,11 +100,11 @@ public class ResourceProvider {
 		try {
 			if (!resourcesMap.containsKey(pPropertiesProvider.name())
 					|| pPropertiesProvider != RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER)
-				log.warning("The default Properties Provider [" + pPropertiesProvider
+				log.warn("The default Properties Provider [" + pPropertiesProvider
 						+ "] doesn't exist in the ResourceProvider, null is returned...");
 			return (PropertiesProvider) resourcesMap.get(pPropertiesProvider.name());
 		} catch (Exception e) {
-			log.log(Level.SEVERE,
+			log.fatal(
 					"Error occured when searching for the default PropertiesProvider in the ResourceProvider, null is returned: "
 							+ e.getMessage());
 			return null;
@@ -121,7 +121,7 @@ public class ResourceProvider {
 		try {
 			return resourcesMap.get(resourceName);
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Error occured when searching for the resource [" + resourceName
+			log.fatal( "Error occured when searching for the resource [" + resourceName
 					+ "] in the ResourceProvider, null is returned: " + e.getMessage());
 			return null;
 		}
@@ -137,7 +137,7 @@ public class ResourceProvider {
 	public static Object addResource(String resourceName, Object resource) {
 		log.info("- Adding new resource in the ResourceProvider: " + resourceName);
 		if (resourcesMap.containsKey(resourceName)) {
-			log.warning("An existing resource is registered with this name ["
+			log.warn("An existing resource is registered with this name ["
 					+ resourcesMap.get(resourceName).getClass().getName() + "], nothing done.");
 			return resourcesMap.get(resourceName);
 		}
@@ -165,11 +165,11 @@ public class ResourceProvider {
 			return resource;
 		}
 		if (pProvidedResource == RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER) {
-			log.warning("An existing Properties Provider is already registered we merge them.");
+			log.warn("An existing Properties Provider is already registered we merge them.");
 			getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).mergeWith((PropertiesProvider) resource);
 			return getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER);
 		} else {
-			log.warning("An existing resource is registered with this name [" + pProvidedResource.name()
+			log.warn("An existing resource is registered with this name [" + pProvidedResource.name()
 					+ "], nothing done.");
 			return resourcesMap.get(pProvidedResource.name());
 		}
@@ -203,7 +203,7 @@ public class ResourceProvider {
 	public static Object removeResource(String resourceName) {
 		if (resourcesMap.containsKey(resourceName))
 			return resourcesMap.remove(resourceName);
-		log.warning("The resource [" + resourceName + "] doesn't exist in the ReosurceProvider,  null is returned.");
+		log.warn("The resource [" + resourceName + "] doesn't exist in the ReosurceProvider,  null is returned.");
 		return null;
 	}
 

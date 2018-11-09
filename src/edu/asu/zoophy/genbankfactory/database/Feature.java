@@ -2,8 +2,8 @@ package edu.asu.zoophy.genbankfactory.database;
 
 import java.util.ArrayList; 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author demetri
@@ -121,7 +121,7 @@ public class Feature {
 			return features;
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "ERROR while parsing Features" + e.getMessage());
+			log.fatal( "ERROR while parsing Features" + e.getMessage());
 			return null;
 		}
 	}

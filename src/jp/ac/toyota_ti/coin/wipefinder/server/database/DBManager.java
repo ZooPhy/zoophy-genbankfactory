@@ -3,8 +3,8 @@ package jp.ac.toyota_ti.coin.wipefinder.server.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider.RP_PROVIDED_RESOURCES;
@@ -43,15 +43,15 @@ public class DBManager {
 			if (c != null) {
 				log.info("GenBank DB Connected: " + Name);
 			} else {
-				log.log(Level.SEVERE, "Error occurred when connecting to the GenBank DB: null handler...");
+				log.fatal( "Error occurred when connecting to the GenBank DB: null handler...");
 				throw new SQLException("Error occurred when connecting to the GenBank DB: null handler...");
 			}
 		} catch (SQLException se) {
-			log.log(Level.SEVERE, "Couldn't connect the postgres GenBank DB with options [jdbc:postgresql://" + Host
+			log.fatal( "Couldn't connect the postgres GenBank DB with options [jdbc:postgresql://" + Host
 					+ "/" + Name + " " + User + " " + PW + "]:" + se.getMessage());
 			throw se;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Other error occured when instantiate the GenBank DB:" + e.getMessage());
+			log.fatal( "Other error occured when instantiate the GenBank DB:" + e.getMessage());
 			throw e;
 		}
 	}
@@ -80,10 +80,10 @@ public class DBManager {
 				log.info("Connection closed");
 			}
 		} catch (SQLException se) {
-			log.log(Level.SEVERE, "Impossible to close the connection with the GenBank DB: " + se.getMessage());
+			log.fatal( "Impossible to close the connection with the GenBank DB: " + se.getMessage());
 			return;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Other error when closing the GenBank DB:" + e.getMessage());
+			log.fatal( "Other error when closing the GenBank DB:" + e.getMessage());
 			return;
 		}
 	}
@@ -98,15 +98,15 @@ public class DBManager {
 				if (c != null) {
 					log.info("New connection to DB: " + Name);
 				} else {
-					log.log(Level.SEVERE, "Error occurred when connecting to the GenBank DB: null handler...");
+					log.fatal( "Error occurred when connecting to the GenBank DB: null handler...");
 					throw new SQLException("Error occurred when connecting to the GenBank DB: null handler...");
 				}
 			} catch (SQLException se) {
-				log.log(Level.SEVERE, "Couldn't connect the postgres GenBank DB with options [jdbc:postgresql://" + Host
+				log.fatal( "Couldn't connect the postgres GenBank DB with options [jdbc:postgresql://" + Host
 						+ "/" + Name + " " + User + " " + PW + "]:" + se.getMessage());
 				throw se;
 			} catch (Exception e) {
-				log.log(Level.SEVERE, "Other error occured when instantiate the GenBank DB:" + e.getMessage());
+				log.fatal( "Other error occured when instantiate the GenBank DB:" + e.getMessage());
 				throw e;
 			}
 		} else {

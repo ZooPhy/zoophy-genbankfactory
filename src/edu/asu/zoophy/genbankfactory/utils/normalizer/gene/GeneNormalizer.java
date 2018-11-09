@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.GenBankFactory;
 import edu.asu.zoophy.genbankfactory.utils.taxonomy.GenBankTree;
@@ -82,7 +82,7 @@ public class GeneNormalizer {
 			log.info("Genes Normalized.");
 		} 
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Could not normalize Genes: "+e.getMessage());
+			log.fatal( "Could not normalize Genes: "+e.getMessage());
 		}
 	}
 	
@@ -92,7 +92,7 @@ public class GeneNormalizer {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch (Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 		queryParams = new LinkedList<Object>();
@@ -164,7 +164,7 @@ public class GeneNormalizer {
 			total_updates = 0;
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error updating genes: "+e.getMessage());
+			log.fatal( "Error updating genes: "+e.getMessage());
 		}
 	}
 	
@@ -185,16 +185,16 @@ public class GeneNormalizer {
 					}
 				}
 				else {
-					log.log(Level.SEVERE, "Taxon not in tree: "+taxon);
+					log.fatal( "Taxon not in tree: "+taxon);
 					return taxon;
 				}
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Error finding taxonomy for taxon: " + taxon);
+				log.fatal( "Error finding taxonomy for taxon: " + taxon);
 				return taxon;
 			}
 		}
-		log.log(Level.SEVERE, "Could not map taxon: "+taxon);
+		log.fatal( "Could not map taxon: "+taxon);
 		return taxon;
 	}
 
@@ -204,7 +204,7 @@ public class GeneNormalizer {
 			for (Integer i : unmapped_taxons) {
 				strBld.append(i+", ");
 			}
-			log.log(Level.SEVERE, "Could not map taxons: "+strBld.toString());
+			log.fatal( "Could not map taxons: "+strBld.toString());
 		}
 	}
 	

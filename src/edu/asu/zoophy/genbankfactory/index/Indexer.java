@@ -14,8 +14,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -100,14 +100,14 @@ public class Indexer {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch (Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new IndexerException("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 	    try {
 			gn = GeneNormalizer.getInstance();
 		}
 	    catch (Exception e) {
-			log.log(Level.SEVERE, "Could not get GeneNormalizer: "+e.getMessage());
+			log.fatal( "Could not get GeneNormalizer: "+e.getMessage());
 		}
 	    // initialize continent sets
 	    continents = new HashSet<Integer>(Arrays.asList(6255146,6255147,6255148,6255149,6255150,6255151,6255152));
@@ -121,7 +121,7 @@ public class Indexer {
 	    //check the directory where the index will be opened
 		File indexDir = new File(indexPath);
 	    if (!indexDir.exists() || !indexDir.isDirectory()) {
-	    	log.log(Level.SEVERE, indexDir + " does not exist");
+	    	log.fatal( indexDir + " does not exist");
 	    	throw new IndexerException("The parameters for opening the Index are incorrect.");
 	    }
 	    else { //clean out old index if it exists
@@ -148,7 +148,7 @@ public class Indexer {
         	log.info("Creation of a new index.");    		
     	}
     	catch(Exception e) {
-    		log.log(Level.SEVERE, "Impossible to create the index:"+e.getMessage());
+    		log.fatal( "Impossible to create the index:"+e.getMessage());
     		throw new IndexerException();
     	}
 	}
@@ -251,19 +251,56 @@ public class Indexer {
 			segmentLength = "0"+segmentLength;
 		}
 		doc.add(new StringField("SegmentLength", segmentLength,Field.Store.YES));
-		//add gene info//
-		if (record.getGenes() != null) {
-			for (Gene g : record.getGenes()) {
-				if (g.getName() != null) {
-					if (g.getName().equalsIgnoreCase("complete")) {
-						doc.add(new StringField("Gene", "Complete", Field.Store.YES));
+		
+		//add gene info
+		/* First add the genes in index and check if any of the gene contains complete
+		 * 		if yes => then set the flat True 
+		 * After this check if definition contains "complete" word
+		 * 		if yes = > then add Gene Complete in index and end.
+		 * 		if no => if flag isn't true check for condition if all the genes belong the genomelist that is represented by taxon 		
+		 * 			if yes => set flat to true
+		 * Finally check for condition that if completeFlag is true and definition doesn't contain partial
+		 * 		then add Gene Complete to index otherwise end
+		 * 
+		 */
+		try {
+			if (record.getGenes() != null) {
+				List<String> genes = new LinkedList<String>();
+				Boolean completeFlag = false;
+				for (Gene g : record.getGenes()) {
+					if (g.getName() != null) {
+						if (g.getName().equalsIgnoreCase("complete")) {
+							completeFlag = true;
+						}
+						else {
+							doc.add(new StringField("Gene", g.getName(), Field.Store.YES));
+						}
+					genes.add(g.getName());
 					}
-					else {
-						doc.add(new StringField("Gene", g.getName(), Field.Store.YES));
+				}
+				if (!record.getSequence().getDefinition().toLowerCase().contains("influenza")) {
+					
+					if (record.getSequence().getDefinition().toLowerCase().contains("complete genome")) {
+						doc.add(new StringField("Gene", "Complete", Field.Store.YES));
+					} else { 
+					
+						if(!completeFlag) {
+							List<String> fullGenome = gn.getFullGenomeList(record.getSequence().getTax_id());
+							if (fullGenome != null && (genes.containsAll(fullGenome) )) {
+								completeFlag = true;
+							}
+						}
+							
+						if (completeFlag && !record.getSequence().getDefinition().contains("partial") ) {
+							doc.add(new StringField("Gene", "Complete", Field.Store.YES));	
+						}
 					}
 				}
 			}
-			checkForFullGenome(record);
+			
+		}
+		catch (Exception e) {
+			log.warn( "Error adding gene infor of  "+ record.getAccession()  +e.getMessage());
 		}
 		//add taxon info//
 		if (record.getSequence().getTax_id() <= 1) {
@@ -294,7 +331,7 @@ public class Indexer {
 				}
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Error indexing taxonomy for taxon: " + record.getSequence().getTax_id());
+				log.fatal( "Error indexing taxonomy for taxon: " + record.getSequence().getTax_id());
 				doc.add(new StringField("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES));
 				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 			}
@@ -310,11 +347,12 @@ public class Indexer {
 			}
 			List<String> fullGenome = gn.getFullGenomeList(record.getSequence().getTax_id());
 			if (fullGenome != null && (genes.containsAll(fullGenome) || genes.contains("Complete"))) {
+				
 				doc.add(new StringField("Gene", "Complete", Field.Store.YES));
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error checking for full genome: "+e.getMessage());
+			log.fatal( "Error checking for full genome: "+e.getMessage());
 		}
 	}
 	/**
@@ -356,7 +394,7 @@ public class Indexer {
 				}
 			}
 			catch (Exception e) { 
-				log.log(Level.SEVERE, "Error indexing taxonomy for host taxon: " + record.getHost().getTaxon());
+				log.fatal( "Error indexing taxonomy for host taxon: " + record.getHost().getTaxon());
 				doc.add(new StringField("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
 				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
 			}
@@ -382,7 +420,7 @@ public class Indexer {
 						updateGeonameIDsQuery.addBatch(params);
 					} 
 					catch (SQLException e) {
-						log.log(Level.SEVERE, "Issue updating geoname ID: "+e.getMessage());
+						log.fatal( "Issue updating geoname ID: "+e.getMessage());
 					}
 				}
 			}
@@ -410,7 +448,7 @@ public class Indexer {
 								updateGeonameIDsQuery.addBatch(params);
 							} 
 							catch (SQLException e) {
-								log.log(Level.SEVERE, "Issue updating Geoname ID: "+e.getMessage());
+								log.fatal( "Issue updating Geoname ID: "+e.getMessage());
 							}
 						}
 					}
@@ -483,7 +521,7 @@ public class Indexer {
 								g = geoTree.getMapIDNodes().get(2017370);
 							}
 							else {
-								log.log(Level.SEVERE, "Error loop Found for GeonameID: "+g.getID());
+								log.fatal( "Error loop Found for GeonameID: "+g.getID());
 								g = null;
 								gIDs.add(geoTree.getRoot().getID());
 							}
@@ -545,7 +583,7 @@ public class Indexer {
 						}
 					}
 					catch (Exception e) {
-						log.log(Level.SEVERE, "ERROR setting country name for country code: "+country_code);
+						log.fatal( "ERROR setting country name for country code: "+country_code);
 						doc.add(new TextField("Country", "Unknown", Field.Store.YES));
 					}
 					doc.add(new StringField("CountryCode", country_code, Field.Store.YES));
@@ -566,7 +604,7 @@ public class Indexer {
 			
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error indexing location for Geoname id: " + id + " " + e.getMessage());
+			log.fatal( "Error indexing location for Geoname id: " + id + " " + e.getMessage());
 			doc.add(new TextField("Location", FIELD_UNKNOWN, Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(id), Field.Store.YES));
 			doc.add(new StringField("GeonameID", String.valueOf(geoTree.getRoot().getID()), Field.Store.YES));
@@ -724,7 +762,7 @@ public class Indexer {
 				}
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Impossible to format the date [" + record.getSequence().getCollection_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
+				log.fatal( "Impossible to format the date [" + record.getSequence().getCollection_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
 			}
 		}
 		return "10000101";
@@ -774,7 +812,7 @@ public class Indexer {
 				}
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Impossible to format the date [" + record.getSequence().getNormalizaed_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
+				log.fatal( "Impossible to format the date [" + record.getSequence().getNormalizaed_date().trim() + "] for the accession ["+record.getAccession()+"], insert the default date 1-1-1");			
 			}
 		}
 		return "10000101";
@@ -821,7 +859,7 @@ public class Indexer {
 		    log.info("Index closed successfully.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Cannot close the index: "+e.getMessage());
+			log.fatal( "Cannot close the index: "+e.getMessage());
 		}
 	}
 	protected IndexWriter getWriter() {
@@ -838,7 +876,7 @@ public class Indexer {
 			geoTree = GeoNameTree.getInstance();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "An error occurred when creating the Taxonomy/GeoName trees : "+e.getMessage());
+			log.fatal( "An error occurred when creating the Taxonomy/GeoName trees : "+e.getMessage());
 			throw new IndexerException("An error occurred when creating the taxonomy tree : "+e.getMessage());			
 		}
 		PreparedStatement stm = null;
@@ -866,7 +904,7 @@ public class Indexer {
 						indexAccession(record, gbTree, geoTree);
 					}
 					catch (Exception e) {
-						log.log(Level.SEVERE, "There was an error indexing " + record.getAccession() + ": " + e.getMessage());
+						log.fatal( "There was an error indexing " + record.getAccession() + ": " + e.getMessage());
 					}
 					record = null;
 				}
@@ -905,7 +943,7 @@ public class Indexer {
 			log.info("Missing Geoname IDs updated.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "An error occurred when fetching the Accessions : "+e.getMessage());
+			log.fatal( "An error occurred when fetching the Accessions : "+e.getMessage());
 			throw new IndexerException("An error occurred when fetching the Accessions : "+e.getMessage());
 		}
 		finally {
@@ -919,7 +957,7 @@ public class Indexer {
 				this.Close();
 			}
 			catch (SQLException e) {
-				log.log(Level.SEVERE, "ERROR could not close SQL resource(s): "+e.getMessage());
+				log.fatal( "ERROR could not close SQL resource(s): "+e.getMessage());
 			}
 			log.info("Total Missing Locations: "+missingLocs);
 			log.info("Country Mapped Locations: "+countryMappedLocs);

@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.PossibleLocation;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
@@ -24,7 +24,7 @@ public class ExtractState {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch (Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 	}
@@ -54,7 +54,7 @@ public class ExtractState {
 			
 			e.printStackTrace();
 		}
-		log.log(Level.INFO,"size of list :" + input.size());
+		log.info("size of list :" + input.size());
 		
 		int count = 0;
 		try {
@@ -74,7 +74,7 @@ public class ExtractState {
 						count = 0;
 						updateQueryStmt.executeBatch();
 						updateQueryStmt = conn.prepareStatement(UPDATE_QUERY);
-						log.log(Level.INFO,"ExtractState: Updated 10000 records ");
+						log.info("ExtractState: Updated 10000 records ");
 					}
 				}
 			

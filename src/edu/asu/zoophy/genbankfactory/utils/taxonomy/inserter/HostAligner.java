@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +50,7 @@ public class HostAligner implements HostNormalizer {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch(Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 	}
@@ -76,11 +76,11 @@ public class HostAligner implements HostNormalizer {
 			nameToID.remove("no culture available");
 		}
 		catch(SQLException se) {
-			log.log(Level.SEVERE, "Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
+			log.fatal( "Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
 			throw new Exception("Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
+			log.fatal( "Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
 			throw new Exception("Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
 		}
 		finally {
@@ -89,7 +89,7 @@ public class HostAligner implements HostNormalizer {
 					rs.close();
 				} 
 				catch (SQLException e) {
-					log.warning("Impossible to close the ResultSet: "+e.getMessage());
+					log.warn("Impossible to close the ResultSet: "+e.getMessage());
 				}
 			}
 			query.close();
@@ -134,7 +134,7 @@ public class HostAligner implements HostNormalizer {
 						if (ID == null) { //still not, last try with the head to target mother concept
 							ID = getHeadID(name, accession);
 							if (ID == null || ID.intValue() == 1) {
-								log.warning("Impossible to find host ID for the accession ["+accession+"] name ["+name+"] (not in the map)");
+								log.warn("Impossible to find host ID for the accession ["+accession+"] name ["+name+"] (not in the map)");
 								ID = 1;
 							}
 						}
@@ -155,11 +155,11 @@ public class HostAligner implements HostNormalizer {
 			log.info("Host Updates Completed");
 		}
 		catch(SQLException se) {
-			log.log(Level.SEVERE, "Impossible to retrieve the host name in the host table: "+se.getMessage());
+			log.fatal( "Impossible to retrieve the host name in the host table: "+se.getMessage());
 			throw new Exception("Impossible to retrieve the host name in the host table: "+se.getMessage());
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Other problem when retrieving the host name in the host table: "+e.getMessage());
+			log.fatal( "Other problem when retrieving the host name in the host table: "+e.getMessage());
 			throw new Exception("Other problem when retrieving the host name in the host table: "+e.getMessage());
 		}
 		finally {
@@ -168,7 +168,7 @@ public class HostAligner implements HostNormalizer {
 					rs.close();
 				} 
 				catch (SQLException e) {
-					log.warning("Impossible to close the ResultSet: "+e.getMessage());
+					log.warn("Impossible to close the ResultSet: "+e.getMessage());
 				}
 			}
 			if (pull_hosts_query!=null) {
@@ -195,7 +195,7 @@ public class HostAligner implements HostNormalizer {
 			}
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "ERROR running update host batch: " + e.getMessage());
+			log.fatal( "ERROR running update host batch: " + e.getMessage());
 		}
 	}
 	

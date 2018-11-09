@@ -18,12 +18,12 @@ public class GBMetadataUpdater {
 	
 	public GBMetadataUpdater() throws Exception {
 		try {
-			pp = new PropertiesProvider("GBMetadataUpdater.local.properties");
+			pp = new PropertiesProvider("./GenBankFactory.local.properties");
 		    try
 		    {
 		    	Provider = new ResourceProvider();
 		    	ResourceProvider.addResource(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER, pp);
-		    	dbi = new DBInterfacer((String)pp.getValue("annotation.DB.Name"), (String)pp.getValue("annotation.DB.Host"), (String)pp.getValue("annotation.DB.User"), (String)pp.getValue("annotation.DB.PW"));
+		    	dbi = new DBInterfacer((String)pp.getValue("DB.Big.Name"), (String)pp.getValue("DB.Host"), (String)pp.getValue("DB.User"), (String)pp.getValue("DB.PW"));
 		    	ResourceProvider.addResource(RP_PROVIDED_RESOURCES.ANNOTATION_DBI, dbi);
 		    }catch(Exception e)
 		    {

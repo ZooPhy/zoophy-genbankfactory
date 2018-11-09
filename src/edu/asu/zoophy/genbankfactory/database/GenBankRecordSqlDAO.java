@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
@@ -32,10 +32,10 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	private final String HOST_INSERT = "INSERT INTO \"Host\"(\"Accession\",\"Host_Name\",\"Host_taxon\") VALUES(?,?,?);";
 	private final String GENBANK_LOCATION_INSERT = "INSERT INTO \"Location_GenBank\"(\"Accession\",\"Location\",\"Latitude\",\"Longitude\") VALUES(?,?,?,?);";
 	private final String EMPTY_GEONAME_LOCATION_INSERT = "INSERT INTO \"Location_Geoname\"(\"Accession\") VALUES(?);";
-	private final String FULL_GEONAME_LOCATION_INSERT = "INSERT INTO \"Location_Geoname\"(\"Accession\", \"Geoname_ID\", \"Location\", \"Latitude\", \"Longitude\", \"Type\", \"Country\") VALUES (?, ?, ?, ?, ?, ?, ?);";
+	private final String FULL_GEONAME_LOCATION_INSERT = "INSERT INTO \"Location_Geoname\"(\"Accession\", \"Geoname_ID\", \"Location\", \"Latitude\", \"Longitude\", \"Type\", \"Country\", \"State\") VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 	private final String PUBLICATION_INSERT = "INSERT INTO \"Publication\"(\"Pub_ID\",\"Pubmed_ID\",\"Pubmed_Central_ID\",\"Authors\",\"Title\",\"Journal\") VALUES(default,?,?,?,?,?);";
 	private final String SEQUENCE_INSERT = "INSERT INTO \"Sequence\"(\"Accession\",\"Sequence\",\"Segment_Length\") VALUES(?,?,?);";
-	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\",\"pH1N1\") VALUES(?,?,?,?,?,?,?,?,?,?,?);";
+	private final String DETAILS_INSERT = "INSERT INTO \"Sequence_Details\"(\"Accession\",\"Definition\",\"Tax_ID\",\"Organism\",\"Isolate\",\"Strain\",\"Collection_Date\",\"Itv_From\",\"Itv_To\",\"Comment\",\"pH1N1\",\"Normalized_Date\") VALUES(?,?,?,?,?,?,?,?,?,?,?,?);";
 	private final String SEQUENCE_PUBLICATION_INSERT = "INSERT INTO \"Sequence_Publication\"(\"Accession\",\"Pub_ID\") VALUES(?,?);";
 	private final String CHECK_PUBLICATION = "SELECT * FROM \"Publication\" WHERE \"Pubmed_ID\"=?";
 	private final String RETRIEVE_DETAILS = "SELECT * FROM \"Sequence_Details\" WHERE \"Accession\"=?";
@@ -90,7 +90,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			featureQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, FEATURE_INSERT);
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error setting up queries");
+			log.fatal( "Error setting up queries");
 		}
 	}
 	/**
@@ -108,7 +108,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			getPublicationQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, RETRIEVE_PUBLICATION);
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error setting up queries");
+			log.fatal( "Error setting up queries");
 		}
 	}
 	@Override
@@ -143,13 +143,13 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					}
 				}
 				catch (Exception e) {
-					log.log(Level.SEVERE, "INSERTION ERROR: " + e.getMessage()); 
+					log.fatal( "INSERTION ERROR: " + e.getMessage()); 
 				}
 			}
 			log.info("Main Insertion successfully completed");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error Inserting Records: " + e.getMessage());
+			log.fatal( "Error Inserting Records: " + e.getMessage());
 		}
 		finally {
 			//close DB connection//
@@ -185,6 +185,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					queryParams.add(seq.getItv_to());
 					queryParams.add(seq.getComment());
 					queryParams.add(seq.isPH1N1());
+					queryParams.add(seq.getNormalizaed_date());
 					detailsQuery.addBatch(queryParams);
 					seq = null;
 					queryParams.clear();
@@ -201,7 +202,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			log.info("Sequence Details successfully inserted");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "ERROR INSERTING SEQUENCE_DETAILS: " + e.getMessage());
+			log.fatal( "ERROR INSERTING SEQUENCE_DETAILS: " + e.getMessage());
 			throw new Exception("ERROR INSERTING SEQUENCE_DETAILS");
 		} 
 		finally {
@@ -250,13 +251,13 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 					}
 				}
 				catch (Exception e) {
-					log.log(Level.SEVERE, "Error adding Publicaton for " + parsedRecords.get(i).getAccession() + ": " + e.getMessage());
+					log.fatal( "Error adding Publicaton for " + parsedRecords.get(i).getAccession() + ": " + e.getMessage());
 				}
 			}
 			log.info("Publications successfully inserted");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error inserting Publications: " + e.getMessage());
+			log.fatal( "Error inserting Publications: " + e.getMessage());
 		}
 		finally {
 			//close connection//
@@ -285,7 +286,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Sequence " + seq.getAccession() + ": " + e.getMessage());
+			log.fatal( "Error adding Sequence " + seq.getAccession() + ": " + e.getMessage());
 		}
 	}
 	/**
@@ -306,7 +307,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			queryParams.clear();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error Checking Publication: " + e.getMessage());
+			log.fatal( "Error Checking Publication: " + e.getMessage());
 		}
 		return true;
 	}
@@ -390,7 +391,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Genes: " + e.getMessage());
+			log.fatal( "Error adding Genes: " + e.getMessage());
 		}
 	}
 	/**
@@ -407,7 +408,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			queryParams.clear();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Host: " + e.getMessage());
+			log.fatal( "Error adding Host: " + e.getMessage());
 		}
 	}
 	/**
@@ -428,7 +429,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Features: " + e.getMessage());
+			log.fatal( "Error adding Features: " + e.getMessage());
 		}
 	}
 	/**
@@ -448,7 +449,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Genbank Location: " + e.getMessage());
+			log.fatal( "Error adding Genbank Location: " + e.getMessage());
 		}
 	}
 	
@@ -463,6 +464,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				queryParams.add(geonameLocation.getLongitude());
 				queryParams.add(geonameLocation.getType());
 				queryParams.add(geonameLocation.getCountry());
+				queryParams.add(geonameLocation.getState());
 				fullGeoLocQuery.addBatch(queryParams);
 				queryParams.clear();
 			}
@@ -473,7 +475,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			}
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error adding Genbank Location: " + e.getMessage());
+			log.fatal( "Error adding Genbank Location: " + e.getMessage());
 		}
 	}
 	
@@ -501,7 +503,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			record.setPossLocations(findPossLocations(accession));
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error pulling record " + accession + ": " + e.getMessage());
+			log.fatal( "Error pulling record " + accession + ": " + e.getMessage());
 			if (record.getSequence() == null) {
 				record = null;//don't want to return a hollow record//
 			}
@@ -546,7 +548,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the SequenceDetails");
+			log.fatal( "There was an error mapping the SequenceDetails");
 			throw e;//stop the retreival process//
 		}
 		return seq;
@@ -567,7 +569,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Sequence: " + e.getMessage());
+			log.fatal( "There was an error mapping the Sequence: " + e.getMessage());
 		}
 		return sequence;
 	}
@@ -595,7 +597,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Publication: " + e.getMessage());
+			log.fatal( "There was an error mapping the Publication: " + e.getMessage());
 		}
 		return pub;
 	}
@@ -617,7 +619,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Host: " + e.getMessage());
+			log.fatal( "There was an error mapping the Host: " + e.getMessage());
 		}
 		return host;
 	}
@@ -645,7 +647,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the GenBankLocation: " + e.getMessage());
+			log.fatal( "There was an error mapping the GenBankLocation: " + e.getMessage());
 		}
 		return genBankLoc;
 	}
@@ -672,12 +674,12 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 				genBankLoc.setLongitude(rs.getDouble("Longitude"));
 				genBankLoc.setType(rs.getString("Type"));
 				genBankLoc.setCountry(rs.getString("Country"));
-				genBankLoc.setCountry(rs.getString("State"));
+				genBankLoc.setState(rs.getString("State"));
 			}
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the GenBankLocation: " + e.getMessage());
+			log.fatal( "There was an error mapping the GenBankLocation: " + e.getMessage());
 		}
 		return genBankLoc;
 	}
@@ -705,7 +707,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Genes: " + e.getMessage());
+			log.fatal( "There was an error mapping the Genes: " + e.getMessage());
 		}
 		return genes;
 	}
@@ -734,7 +736,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Features: " + e.getMessage());
+			log.fatal( "There was an error mapping the Features: " + e.getMessage());
 		}
 		return features;
 	}
@@ -763,7 +765,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "There was an error mapping the Possible Locations: " + e.getMessage());
+			log.fatal( "There was an error mapping the Possible Locations: " + e.getMessage());
 		}
 		return possLocs;
 	}
@@ -777,7 +779,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
             return conn;
         } 
         catch (Exception e) {
-            log.log(Level.SEVERE, "error getting connection: "+e.getMessage());
+            log.fatal( "error getting connection: "+e.getMessage());
             throw new Exception("error getting connection: "+e.getMessage());
         }
     }
@@ -795,9 +797,10 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 		Connection conn = null;
 		try {
 			//setup DB connection//
+			log.info("Inside clearTables");
 			conn = getDriver();
 			Statement st = conn.createStatement();
-			log.warning("RESETING DATABASE");
+			log.warn("RESETING DATABASE");
 			st.executeUpdate("TRUNCATE \"Sequence_Details\" CASCADE;");
 			st.executeUpdate("TRUNCATE \"Publication\" CASCADE;");
 			st.executeUpdate("TRUNCATE \"Taxonomy_Concept\" CASCADE;");
@@ -810,8 +813,11 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			st.close();
 		} 
 		catch (SQLException e) {
-			log.log(Level.SEVERE, "Impossible to truncate the tables: " + e.getMessage());
+			log.fatal( "Impossible to truncate the tables: " + e.getMessage());
 			throw new Exception("Impossible to truncate the tables: " + e.getMessage());
+		}catch (Exception ex) {
+			log.fatal("Exception occured in clearTables " + ex.getMessage() );
+			throw new Exception("Failed to truncate the tables: " + ex.getMessage());
 		}
 		finally {
 			//close DB connection//
@@ -825,10 +831,10 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 	public void printSQLError(SQLException se) {
 		int count = 1;
 		while (se != null) {
-			log.log(Level.SEVERE, "SQLException " + count);
-			log.log(Level.SEVERE, "Code: " + se.getErrorCode());
-			log.log(Level.SEVERE, "SqlState: " + se.getSQLState());
-			log.log(Level.SEVERE, "Error Message: " + se.getMessage());
+			log.fatal( "SQLException " + count);
+			log.fatal( "Code: " + se.getErrorCode());
+			log.fatal( "SqlState: " + se.getSQLState());
+			log.fatal( "Error Message: " + se.getMessage());
 			se = se.getNextException();
 			count++;
 		}
@@ -924,7 +930,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error pulling records for Index " + e.getMessage());
+			log.fatal( "Error pulling records for Index " + e.getMessage());
 			throw e;
 		}
 		finally {
@@ -953,7 +959,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			rs.close();
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error pulling Genes for " + accession + ": " + e.getMessage());
+			log.fatal( "Error pulling Genes for " + accession + ": " + e.getMessage());
 		}
 		finally {
 			closeConn(conn);
@@ -988,7 +994,7 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			log.info("Locations inserted.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error inserting locations: "+e.getMessage());
+			log.fatal( "Error inserting locations: "+e.getMessage());
 		}
 	}
 }

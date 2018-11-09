@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -37,28 +37,34 @@ public class PmidPmcidMapperCSV implements PmidPmcidMapperInt {
 			pmidPubmedRefMap = new HashMap<String, String>(4000000);
 			boolean isHeaderParsed = false;
 			for (CSVRecord record: csvFileParser) {
-				nbrRef++;
-				//Create a new student object and fill his data
-				if(!isHeaderParsed) {
-					isHeaderParsed = true;
-				}
-				else {
-					//TODO: re-add if we want to use all that info//
-					//PublicationRef pubref = new PublicationRef(record.get("Journal Title"),record.get("ISSN"),record.get("eISSN"),record.get("Year"),record.get("Volume"),record.get("Issue"),record.get("Page"),record.get("DOI"),record.get("PMCID"),record.get("PMID"),record.get("Manuscript Id"),record.get("Release Date"));
-					//TODO uncomment if we run that on a bigger machine: 
-					//pmcidPubmedRefMap.put(pubref.getPMCID(), pubref);
-					pmidPubmedRefMap.put(record.get("PMID"), record.get("PMCID"));
-				}
-				rest = nbrRef % 250000;
-				if(rest==0) {
-					StringBuilder out = new StringBuilder("References processed : ");
-					out.append(nbrRef);
-					log.info(out.toString());
+				
+				try {
+					nbrRef++;
+					//Create a new student object and fill his data
+					if(!isHeaderParsed) {
+						isHeaderParsed = true;
+					}
+					else {
+						//TODO: re-add if we want to use all that info//
+						//PublicationRef pubref = new PublicationRef(record.get("Journal Title"),record.get("ISSN"),record.get("eISSN"),record.get("Year"),record.get("Volume"),record.get("Issue"),record.get("Page"),record.get("DOI"),record.get("PMCID"),record.get("PMID"),record.get("Manuscript Id"),record.get("Release Date"));
+						//TODO uncomment if we run that on a bigger machine: 
+						//pmcidPubmedRefMap.put(pubref.getPMCID(), pubref);
+						pmidPubmedRefMap.put(record.get("PMID"), record.get("PMCID"));
+					}
+					rest = nbrRef % 250000;
+					if(rest==0) {
+						StringBuilder out = new StringBuilder("References processed : ");
+						out.append(nbrRef);
+						log.info(out.toString());
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					log.warn("Unable to parse line no " + nbrRef + " Hence skipping it."  );
 				}
 			}
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Impossible to parse the CSV file ["+csv_file_path+"], error occurred at line["+(nbrRef+1)+"]: "+e.getMessage());
+			log.fatal( "Impossible to parse the CSV file ["+csv_file_path+"], error occurred at line["+(nbrRef+1)+"]: "+e.getMessage());
 			throw new Exception("Impossible to parse the CSV file ["+csv_file_path+"], error occurred at line["+(nbrRef+1)+"]: "+e.getMessage());
 		}
 		finally {
@@ -72,7 +78,7 @@ public class PmidPmcidMapperCSV implements PmidPmcidMapperInt {
 	}
 	@Override
 	public String getPMID(String PMCID) {
-		log.log(Level.SEVERE, "Not implement, I don't have enough memory on my small machine...");
+		log.fatal( "Not implement, I don't have enough memory on my small machine...");
 		return null;
 		//TODO uncomment if we run that on a bigger machine:
 //		PublicationRef ref = pmcidPubmedRefMap.get(PMCID);

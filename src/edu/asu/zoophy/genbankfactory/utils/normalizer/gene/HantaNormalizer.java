@@ -9,8 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -86,7 +86,7 @@ public class HantaNormalizer {
 			log.info("Segment Normalizer complete.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Hantavirus segment normalization failed: "+e.getMessage());
+			log.fatal( "Hantavirus segment normalization failed: "+e.getMessage());
 			throw e;
 		}
 		finally {
@@ -128,7 +128,7 @@ public class HantaNormalizer {
 			}
 			catch (SQLException sqle) {
 				if (!sqle.getMessage().equalsIgnoreCase("No row has been returned when one was expected...")) {
-					log.warning("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
+					log.warn("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
 				}
 			}
 			finally {

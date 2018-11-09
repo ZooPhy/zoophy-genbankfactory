@@ -10,8 +10,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -106,7 +106,7 @@ public class WNVNormalizer {
 			log.info("WNV Notes Normalizer complete.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "WNV note normalization failed: "+e.getMessage());
+			log.fatal( "WNV note normalization failed: "+e.getMessage());
 			throw e;
 		}
 		finally {
@@ -153,7 +153,7 @@ public class WNVNormalizer {
 				}
 			}
 			catch (SQLException sqle) {
-				log.warning("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
+				log.warn("SQL Error proccessing segmentsfor: "+acc+" "+sqle.getMessage());
 			}
 			finally {
 				if (rs != null) {

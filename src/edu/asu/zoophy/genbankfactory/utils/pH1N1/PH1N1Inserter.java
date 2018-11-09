@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
@@ -42,7 +42,7 @@ public class PH1N1Inserter {
 			log.info("pH1N1 update complete.");
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "ERROR PH1N1Inserter failed: "+e.getMessage());
+			log.fatal( "ERROR PH1N1Inserter failed: "+e.getMessage());
 			throw new Exception("ERROR PH1N1Inserter failed: "+e.getMessage());
 		}
 		finally {
@@ -57,7 +57,7 @@ public class PH1N1Inserter {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch(Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 		updatPH1N1Query = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, UPDATE_PH1N1);

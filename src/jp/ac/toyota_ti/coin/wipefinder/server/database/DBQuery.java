@@ -19,8 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author dw
@@ -79,11 +79,11 @@ public class DBQuery {
 
 			queryType = pQueryType;
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "Impossible to prepare the statement for the query: " + e.getMessage());
+			log.fatal( "Impossible to prepare the statement for the query: " + e.getMessage());
 			close();
 			throw e;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Other error occured when creating the query to insert:" + e.getMessage());
+			log.fatal( "Other error occured when creating the query to insert:" + e.getMessage());
 			close();
 			throw e;
 		}
@@ -110,17 +110,17 @@ public class DBQuery {
 					|| pQueryType == DBQuery.QT_DROP)
 				pstmt = c.prepareStatement(query);
 			else {
-				log.log(Level.SEVERE,
+				log.fatal(
 						"The predifined type of query should be QT_INSERT_BATCH, QT_CREATE_FUNCTION, QT_DROP OR QT_CREATE for this constructor.");
 				throw new SQLException("The predifined type of query should be QT_INSERT_BATCH for this constructor.");
 			}
 			queryType = pQueryType;
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "Impossible to prepare the statement for the query: " + e.getMessage());
+			log.fatal( "Impossible to prepare the statement for the query: " + e.getMessage());
 			close();
 			throw e;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Other error occured when creating the query to insert:" + e.getMessage());
+			log.fatal( "Other error occured when creating the query to insert:" + e.getMessage());
 			close();
 			throw e;
 		}
@@ -135,7 +135,7 @@ public class DBQuery {
 					pstmt.close();
 			}
 		} catch (Exception e) {
-			log.warning(
+			log.warn(
 					"Impossible to close the ressource for the query [" + pstmt.toString() + "]: " + e.getMessage());
 		}
 		c = null;
@@ -193,16 +193,16 @@ public class DBQuery {
 				} else if (param instanceof java.lang.Boolean) {
 					pstmt.setBoolean(i + 1, (Boolean) param);
 				} else {
-					log.log(Level.SEVERE, "Parameter's class is unexpected: " + param.getClass().toString());
+					log.fatal( "Parameter's class is unexpected: " + param.getClass().toString());
 					close();
 					throw new SQLException("Error with the parameter received.");
 				}
 			} catch (SQLException e) {
-				log.log(Level.SEVERE, "SQL Error when parsing the parameters of the query:" + e.getMessage());
+				log.fatal( "SQL Error when parsing the parameters of the query:" + e.getMessage());
 				close();
 				throw e;
 			} catch (Exception e) {
-				log.log(Level.SEVERE, "Unexpected error during the parsing of the parameters for a query:"
+				log.fatal( "Unexpected error during the parsing of the parameters for a query:"
 						+ e.getMessage() + ", " + e.toString());
 				close();
 				throw new SQLException();
@@ -223,7 +223,7 @@ public class DBQuery {
 		try {
 			pstmt.addBatch();
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "SQL error during adding operation in the batch: " + e.getMessage());
+			log.fatal( "SQL error during adding operation in the batch: " + e.getMessage());
 			close();
 			throw e;
 		}
@@ -240,16 +240,16 @@ public class DBQuery {
 			// log.info("Instantiated query:\n"+pstmt.toString());
 			pstmt.executeBatch();
 		} catch (BatchUpdateException be) {
-			log.log(Level.SEVERE, "Error(s) occurres when executing the Batch: ");
+			log.fatal( "Error(s) occurres when executing the Batch: ");
 			SQLException se = be.getNextException();
-			log.log(Level.SEVERE, "Error: " + se.getMessage());
+			log.fatal( "Error: " + se.getMessage());
 			throw new SQLException(
 					"Error(s) occurres when executing the Batch: " + be.getMessage() + "->" + se.getMessage());
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "SQL error when executing the batch: " + e.getMessage());
+			log.fatal( "SQL error when executing the batch: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
-			log.log(Level.SEVERE, "Other exceptions occured when executing the SQL batch: " + e.getMessage());
+			log.fatal( "Other exceptions occured when executing the SQL batch: " + e.getMessage());
 			throw new SQLException("Other exceptions occured when executing the SQL batch: " + e.getMessage());
 		} finally {
 			close();
@@ -267,7 +267,7 @@ public class DBQuery {
 		} catch (SQLException e) {
 			// the error message should be handle by the object which call the
 			// DBQuery
-			log.warning("SQL error during deleting operation:" + e.getMessage());
+			log.warn("SQL error during deleting operation:" + e.getMessage());
 			throw e;
 		} finally {
 			close();
@@ -285,7 +285,7 @@ public class DBQuery {
 				instantiateParams();
 			return pstmt.execute();
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "SQL error during deleting operation:" + e.getMessage());
+			log.fatal( "SQL error during deleting operation:" + e.getMessage());
 			throw e;
 		} finally {
 			close();
@@ -301,7 +301,7 @@ public class DBQuery {
 		try {
 			return pstmt.execute();
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "SQL error during droping operation:" + e.getMessage());
+			log.fatal( "SQL error during droping operation:" + e.getMessage());
 			throw e;
 		} finally {
 			close();
@@ -325,7 +325,7 @@ public class DBQuery {
 		} catch (SQLException e) {
 			// the error message should be handle by the object which call the
 			// DBQuery
-			log.warning("SQL error during inserting operation:" + e.getMessage());
+			log.warn("SQL error during inserting operation:" + e.getMessage());
 			throw e;
 		} finally {
 			close();
@@ -347,7 +347,7 @@ public class DBQuery {
 		} catch (SQLException e) {
 			// the error message should be handle by the object which call the
 			// DBQuery
-			log.warning("SQL error during deleting operation:" + e.getMessage());
+			log.warn("SQL error during deleting operation:" + e.getMessage());
 			throw e;
 		} finally {
 			close();
@@ -372,7 +372,7 @@ public class DBQuery {
 		} catch (SQLException e) {
 			// TODO set the error level when finish the implementation (to avoid
 			// annoying message)
-			// log.warning("SQL error during the fetching of the unique
+			// log.warn("SQL error during the fetching of the unique
 			// row:"+e.getMessage());
 			close();
 			throw e;
@@ -391,7 +391,7 @@ public class DBQuery {
 			rs = pstmt.executeQuery();
 			return rs;
 		} catch (SQLException e) {
-			log.log(Level.SEVERE, "SQL error during the select query:" + e.getMessage());
+			log.fatal( "SQL error during the select query:" + e.getMessage());
 			close();
 			throw e;
 		}

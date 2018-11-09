@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.database.GeoNameLocation;
 import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
@@ -181,7 +181,7 @@ public class GeoNameTree extends Tree {
 					c.setFather(p);
 				}
 				catch (Exception e) {
-					log.log(Level.SEVERE, "ERROR parsing GeoID: " + child_id + " : " + e.getMessage());
+					log.fatal( "ERROR parsing GeoID: " + child_id + " : " + e.getMessage());
 				}
 			}
 			scan.close();
@@ -213,7 +213,7 @@ public class GeoNameTree extends Tree {
 			geoFile = null;
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Error Filling GeoNameTree: " + e.getMessage());
+			log.fatal( "Error Filling GeoNameTree: " + e.getMessage());
 		}
 	}
 

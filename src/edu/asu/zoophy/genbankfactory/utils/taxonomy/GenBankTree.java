@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import edu.asu.zoophy.genbankfactory.index.IndexerException;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
@@ -40,7 +40,7 @@ public class GenBankTree extends Tree {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
 	    catch(Exception e) {
-	    	log.log(Level.SEVERE, "Impossible to Initiate the Resources Provider:"+e.getMessage());
+	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new IndexerException("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
 		instantiate(conn);
@@ -70,18 +70,18 @@ public class GenBankTree extends Tree {
 				String name = rs.getString("name");
 				GenBankNode node = mapIDNodes.get(id);
 				if(node==null) {
-					log.log(Level.SEVERE, "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
+					log.fatal( "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
 					throw new Exception("Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
 				}
 				node.setConcept(name);
 			}
 		}
 		catch(SQLException se) {
-			log.log(Level.SEVERE, "Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
+			log.fatal( "Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
 			throw new Exception("Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());
 		}
 		catch(Exception e) {
-			log.log(Level.SEVERE, "Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
+			log.fatal( "Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
 			throw new Exception("Other problem when retrieving the concepts of the taxonomy: "+e.getMessage());
 		}
 		finally {
@@ -90,7 +90,7 @@ public class GenBankTree extends Tree {
 					rs.close();
 				} 
 				catch (SQLException e) {
-					log.warning("Impossible to close the ResultSet: "+e.getMessage());
+					log.warn("Impossible to close the ResultSet: "+e.getMessage());
 				}
 			}
 			if(query!=null) {
@@ -136,7 +136,7 @@ public class GenBankTree extends Tree {
 						//update the information of the existing node
 					}
 					if(newNode.getFather()!=null && newNode.getFather().getID()!=lastFather.getID()) {
-						log.log(Level.SEVERE, "We have a node with multiple fathers 1:["+newNode.getFather().getID()+"], 2:["+lastFather.getID()+"] for node ["+newNode.getID()+"]");
+						log.fatal( "We have a node with multiple fathers 1:["+newNode.getFather().getID()+"], 2:["+lastFather.getID()+"] for node ["+newNode.getID()+"]");
 						throw new Exception("We have a node with multiple fathers 1:["+newNode.getFather().getID()+"], 2:["+lastFather.getID()+"] for node ["+newNode.getID()+"]");
 					}
 					newNode.setFather(lastFather);
@@ -146,11 +146,11 @@ public class GenBankTree extends Tree {
 			}
 		}
 		catch (SQLException se) {
-			log.log(Level.SEVERE, "Impossible to retrieve the tree of the taxonomy: "+se.getMessage());
+			log.fatal( "Impossible to retrieve the tree of the taxonomy: "+se.getMessage());
 			throw new Exception("Impossible to retrieve the tree of the taxonomy: "+se.getMessage());
 		}
 		catch (Exception e) {
-			log.log(Level.SEVERE, "Other problem when retrieving the tree of the taxonomy: "+e.getMessage());
+			log.fatal( "Other problem when retrieving the tree of the taxonomy: "+e.getMessage());
 			throw new Exception("Other problem when retrieving the tree of the taxonomy: "+e.getMessage());
 		}
 		finally {
@@ -159,7 +159,7 @@ public class GenBankTree extends Tree {
 					rs.close();
 				} 
 				catch (SQLException e) {
-					log.warning("Impossible to close the ResultSet: "+e.getMessage());
+					log.warn("Impossible to close the ResultSet: "+e.getMessage());
 				}
 			}
 			if(query!=null) {
