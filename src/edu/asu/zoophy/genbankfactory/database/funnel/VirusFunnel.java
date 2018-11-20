@@ -75,15 +75,6 @@ public class VirusFunnel {
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Ebola records...");
 		    funnelled = accs.size();
-		    //Hanta//
-			query = queryParser.parse("TaxonID:11598");
-			docs = indexSearcher.search(query, 1000000);
-			for (ScoreDoc scoreDoc : docs.scoreDocs) {
-		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.get("Accession"));
-		    }
-		    log.info("Funneling "+(accs.size()-funnelled)+" Hanta records...");
-		    funnelled = accs.size();
 		    //Rabies//
 			query = queryParser.parse("TaxonID:11292");
 			docs = indexSearcher.search(query, 1000000);
@@ -92,6 +83,15 @@ public class VirusFunnel {
 		         accs.add(doc.get("Accession"));
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Rabies records...");
+		    funnelled = accs.size();
+		    // MERS //
+		    query = queryParser.parse("TaxonID:1335626");
+			docs = indexSearcher.search(query, 1000000);
+			for(ScoreDoc scoreDoc : docs.scoreDocs) {
+		         Document doc = indexSearcher.doc(scoreDoc.doc);
+		         accs.add(doc.get("Accession"));
+		    }
+		    log.info("Funneling "+(accs.size()-funnelled)+" MERS-Coronavirus records...");
 		    funnelled = accs.size();
 			//Flu A//
 			query = queryParser.parse("TaxonID:197911");

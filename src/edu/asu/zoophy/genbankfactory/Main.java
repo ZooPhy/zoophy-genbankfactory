@@ -43,6 +43,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		try {
+			log.info("\n\n################################GenBankFactory-Start################################");
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
@@ -128,10 +129,8 @@ public class Main {
 				// Normalize Dates and Extract State Feild
 				DateFormatter dateFormatter = DateFormatter.getInstance();
 				dateFormatter.formatDate();
-				
-				ExtractState extractState = ExtractState.getInstance();
-				extractState.extractState();
-				
+				ExtractGeonames extractGeonameObj = ExtractGeonames.getInstance();
+    			extractGeonameObj.extractGeonames();
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 				//Collect possible missing Genes//
@@ -248,12 +247,13 @@ public class Main {
 	    		//log.fatal( "ERROR! Unrecognized command. Use \"help\" for jar argument instructions.");
 	    		log.fatal("ERROR! Unrecognized command. Use \"help\" for jar argument instructions." );
 	    	}
-	    	log.info("GenBankFactory completed.");
+	    	log.info("################################GenBankFactory-Complete################################");
 			System.exit(0);
 		}
 		catch(Exception e) {
 			//log.fatal( "ERROR running GenBankFactory: " + e.getMessage());
 			log.fatal("ERROR running GenBankFactory: " + e.getMessage());
+			log.info("################################GenBankFactory-Complete-Error################################");
 			e.printStackTrace();
 			System.exit(1);
 		}

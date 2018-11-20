@@ -87,7 +87,6 @@ public class GBLargeMetadataController implements ControllerInt {
 			int numProcessed = 0;
 			while(result0.next()) {
 				String accession = result0.getString(1);
-				log.info("Processing acession ["+accession+"]");
 				queryParams1.clear();
 				queryParams1.add(accession);
 				result1 = query1.executeSelect_MultiRows();	
@@ -172,10 +171,9 @@ public class GBLargeMetadataController implements ControllerInt {
 						}
 					}
 					numProcessed++;
-					log.info("Processed record ["+accession+"] ("+numProcessed+" out of "+numTotal+")");
 					if(numProcessed%5000==0||numProcessed==numTotal) {
 						query3.executeBatch();
-						log.info("Executed. Total records completed: ["+numProcessed+"]");
+						log.info("Executed Query. Total records completed: "+numProcessed+ " out of " + numTotal );
 					}
 					
 				}
