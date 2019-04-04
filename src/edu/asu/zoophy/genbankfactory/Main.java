@@ -95,6 +95,7 @@ public class Main {
 				}
 	 			//Parse Records and Dump//
 				gbFact.getFiles(filter);
+				
 				//Update Host TaxonIDs//
 				HostNormalizer hostNorm = new HostAligner();
 				hostNorm.updateHosts();
@@ -163,6 +164,13 @@ public class Main {
 	    		TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 	    		Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
+				//Collect possible missing Genes//
+				HantaNormalizer hantaNorm = new HantaNormalizer();
+				hantaNorm.normalizeSegments();
+				WNVNormalizer wnvNorm = new WNVNormalizer();
+	    		wnvNorm.normalizeNotes();
+	    		ProductChecker poductCheck = ProductChecker.getInstance();
+	    		poductCheck.checkProducts();
 	    	}
 	    	else if (args.length < 2 && args[0].equalsIgnoreCase("funnel")) {
 	    		dao = new GenBankRecordSqlDAO();

@@ -18,7 +18,7 @@ import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider;
 public class GenBankTree extends Tree {
 	private final Logger log = Logger.getLogger("GenBankTree");
 	private final String SELECT_NODES 		= "SELECT * FROM \"Taxonomy_Tree\" ORDER BY \"parent_node_id\" ASC";
-	private final String SELECT_CONCEPTS	= "SELECT * FROM \"Taxonomy_Concept\"";
+	private final String SELECT_CONCEPTS	= "SELECT * FROM \"Taxonomy_Concept\" ORDER BY class";
 	private Map<Integer, GenBankNode> mapIDNodes = null;
 	private static GenBankTree tree = null;
 	private Connection conn;
@@ -67,14 +67,21 @@ public class GenBankTree extends Tree {
 			rs = query.executeSelect_MultiRows();
 			while(rs.next()) {
 				Integer id = rs.getInt("node_id");
-				String name = rs.getString("name");
+				String name = rs.getString("name");	
+				String className = rs.getString("class");
 				GenBankNode node = mapIDNodes.get(id);
 				if(node==null) {
-					log.fatal( "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
+					log.fatal( "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't beSen inserted in the tree");
 					throw new Exception("Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
 				}
-				node.setConcept(name);
+				if (className.equals("genbank common name") || (className.equals("scientific name") && node.getConcept() == null )) { 
+					node.setConcept(name);
+				}
 			}
+			// debug GenBankTree concept
+			//for(Integer n = 9601; n < 10000; n++)
+			//	log.info("nodeid " + String.valueOf(n) + " " + mapIDNodes.get(n));
+			
 		}
 		catch(SQLException se) {
 			log.fatal( "Impossible to retrieve the concpets of the taxonomy: "+se.getMessage());

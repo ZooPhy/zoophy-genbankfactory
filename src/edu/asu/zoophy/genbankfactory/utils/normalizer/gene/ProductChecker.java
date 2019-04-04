@@ -63,7 +63,7 @@ public class ProductChecker {
 			String acc = targetAccessions.remove();
 			try {
 				checkProduct(acc);
-				log.info("checked: "+acc);
+				//log.info("checked: "+acc);
 			}
 			catch (Exception e) {
 				log.fatal( "Error checking the product for "+acc+": "+e.getMessage());

@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
@@ -142,7 +141,7 @@ public class Indexer {
 	 */
 	protected void createIndex(Path indexDir) throws IndexerException {
     	try {
-    		IndexWriterConfig config = new IndexWriterConfig(new KeywordAnalyzer());
+    		IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
     		luceneDir = FSDirectory.open(indexDir);
     		writer = new IndexWriter(luceneDir, config);
         	log.info("Creation of a new index.");    		
@@ -221,7 +220,7 @@ public class Indexer {
 	}
 	
 	protected void setAccession(GenBankRecord record) {
-		doc.add(new StringField("Accession", record.getAccession(), Field.Store.YES));		
+		doc.add(new TextField("Accession", record.getAccession(), Field.Store.YES));		
 	}
 	/**
 	 * Insert the organism, strain, and the genes related for the given record
@@ -273,7 +272,7 @@ public class Indexer {
 							completeFlag = true;
 						}
 						else {
-							doc.add(new StringField("Gene", g.getName(), Field.Store.YES));
+							doc.add(new TextField("Gene", g.getName(), Field.Store.YES));
 						}
 					genes.add(g.getName());
 					}
@@ -281,7 +280,7 @@ public class Indexer {
 				if (!record.getSequence().getDefinition().toLowerCase().contains("influenza")) {
 					
 					if (record.getSequence().getDefinition().toLowerCase().contains("complete genome")) {
-						doc.add(new StringField("Gene", "Complete", Field.Store.YES));
+						doc.add(new TextField("Gene", "Complete", Field.Store.YES));
 					} else { 
 					
 						if(!completeFlag) {
@@ -292,7 +291,7 @@ public class Indexer {
 						}
 							
 						if (completeFlag && !record.getSequence().getDefinition().contains("partial") ) {
-							doc.add(new StringField("Gene", "Complete", Field.Store.YES));	
+							doc.add(new TextField("Gene", "Complete", Field.Store.YES));	
 						}
 					}
 				}
@@ -302,38 +301,42 @@ public class Indexer {
 		catch (Exception e) {
 			log.warn( "Error adding gene infor of  "+ record.getAccession()  +e.getMessage());
 		}
+		
+		StringBuilder taxonBuilder = new StringBuilder();
 		//add taxon info//
 		if (record.getSequence().getTax_id() <= 1) {
-			doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+			taxonBuilder.append(gbTree.getRoot().getID().toString() + " ");
+			doc.add(new TextField("OrganismID", taxonBuilder.toString(), Field.Store.YES));
 		}
 		else {
 			try {
 				Node node = gbTree.getNode(record.getSequence().getTax_id());
 				if (node !=null) {//we should have most taxons in the tree...
 					String cpts = node.getConcept();
-					if (cpts.contains(" | ")) {
-						for(String cpt: cpts.split(" \\| ")) {
-							doc.add(new StringField("TaxonID", cpt, Field.Store.YES));
-						}
-					}
-					else {
-						doc.add(new StringField("TaxonID", cpts, Field.Store.YES));
-					}
-					doc.add(new StringField("TaxonID", node.getID().toString(), Field.Store.YES));
+					if (cpts != null)
+						doc.add(new StringField("OrganismName", cpts, Field.Store.YES)  );
+					else
+						doc.add(new StringField("OrganismName", "", Field.Store.YES)  );
+					taxonBuilder.append(node.getID().toString()+" ");
 					List<Node> ancestors = node.getAncestors();
 					for (Node ancestor: ancestors) {
-						doc.add(new StringField("TaxonID", ancestor.getID().toString(), Field.Store.YES));
+						taxonBuilder.append(ancestor.getID().toString()+" ");
 					}
+					
 				}
 				else {
-					doc.add(new StringField("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES));
-					doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+					taxonBuilder.append(String.valueOf(record.getSequence().getTax_id()) + " ");
+					taxonBuilder.append(gbTree.getRoot().getID().toString()+" ");
 				}
+				doc.add(new TextField("OrganismID", taxonBuilder.toString(), Field.Store.YES));
 			}
 			catch (Exception e) {
-				log.fatal( "Error indexing taxonomy for taxon: " + record.getSequence().getTax_id());
-				doc.add(new StringField("TaxonID", String.valueOf(record.getSequence().getTax_id()), Field.Store.YES));
-				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+				log.fatal( "Error indexing taxonomy for taxon: " + record.getSequence().getTax_id()+ " " +  e.getMessage());
+				e.printStackTrace();
+				taxonBuilder.append(String.valueOf(record.getSequence().getTax_id()) + " ");
+				taxonBuilder.append(gbTree.getRoot().getID().toString()+" ");
+				doc.add(new TextField("OrganismID", taxonBuilder.toString(), Field.Store.YES));
+				
 			}
 		}
 		doc.add(new StringField("PH1N1", String.valueOf(record.getSequence().isPH1N1()), Field.Store.YES));
@@ -348,7 +351,7 @@ public class Indexer {
 			List<String> fullGenome = gn.getFullGenomeList(record.getSequence().getTax_id());
 			if (fullGenome != null && (genes.containsAll(fullGenome) || genes.contains("Complete"))) {
 				
-				doc.add(new StringField("Gene", "Complete", Field.Store.YES));
+				doc.add(new TextField("Gene", "Complete", Field.Store.YES));
 			}
 		}
 		catch (Exception e) {
@@ -360,6 +363,7 @@ public class Indexer {
 	 * @param record
 	 */
 	protected void setHost(GenBankRecord record, GenBankTree gbTree) {
+		StringBuilder hostBuilder = new StringBuilder();
 		if (record.getHost().getName() != null) {
 			doc.add(new TextField("Host_Name", record.getHost().getName().toLowerCase(), Field.Store.YES));
 		}
@@ -367,36 +371,38 @@ public class Indexer {
 			doc.add(new TextField("Host_Name", FIELD_UNKNOWN.toLowerCase(), Field.Store.YES));
 		}
 		if (record.getHost().getTaxon() <= 1 || record.getHost().getName() == null) {
-			doc.add(new StringField("HostID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+			hostBuilder.append(gbTree.getRoot().getID().toString()+" ");
+			doc.add(new TextField("HostID", hostBuilder.toString(), Field.Store.YES));
 		}
 		else {
 			try { 
 				Node node = gbTree.getNode(record.getHost().getTaxon());
 				if (node != null) {//should have most* taxons in our tree...
 					String cpts = gbTree.getNode(record.getHost().getTaxon()).getConcept();
-					if(cpts.contains(" | ")) {
-						for(String cpt: cpts.split(" \\| ")) {
-							doc.add(new TextField("Host", cpt.toLowerCase(), Field.Store.YES));
-						}
-					}
-					else {
-						doc.add(new TextField("Host", cpts.toLowerCase(), Field.Store.YES));
-					}
-					doc.add(new StringField("HostID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
+					if (cpts != null)
+						doc.add(new StringField("HostNormalizedName", cpts, Field.Store.YES ));
+					else
+						doc.add(new StringField("HostNormalizedName", "", Field.Store.YES ));
+					hostBuilder.append(String.valueOf(record.getHost().getTaxon()) +" ");
 					List<Node> ancestors = node.getAncestors();
 					for(Node ancestor: ancestors) {
-						doc.add(new StringField("HostID", ancestor.getID().toString(), Field.Store.YES));
+						hostBuilder.append(ancestor.getID().toString() +" ");
 					}
 				}
 				else {
-					doc.add(new StringField("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
-					doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+					hostBuilder.append(String.valueOf(record.getHost().getTaxon()) + " ");
+					hostBuilder.append(gbTree.getRoot().getID().toString() + " ");
 				}
+				
+				
+				doc.add(new TextField("HostID", hostBuilder.toString(), Field.Store.YES));
 			}
 			catch (Exception e) { 
-				log.fatal( "Error indexing taxonomy for host taxon: " + record.getHost().getTaxon());
-				doc.add(new StringField("TaxonID", String.valueOf(record.getHost().getTaxon()), Field.Store.YES));
-				doc.add(new StringField("TaxonID", gbTree.getRoot().getID().toString(), Field.Store.YES));
+				log.fatal( "Error indexing taxonomy for host taxon: " + record.getHost().getTaxon() + " " +  e.getMessage() );
+				e.printStackTrace();
+				hostBuilder.append(String.valueOf(record.getHost().getTaxon()) + " ");
+				hostBuilder.append(gbTree.getRoot().getID().toString() + " ");
+				doc.add(new TextField("HostID", hostBuilder.toString(), Field.Store.YES));
 			}
 		}
 	}
@@ -904,7 +910,8 @@ public class Indexer {
 						indexAccession(record, gbTree, geoTree);
 					}
 					catch (Exception e) {
-						log.fatal( "There was an error indexing " + record.getAccession() + ": " + e.getMessage());
+						e.printStackTrace();
+						log.fatal( "There was an error indexing " + record.getAccession() + ": " + e.getMessage() );
 					}
 					record = null;
 				}

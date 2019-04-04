@@ -13,14 +13,6 @@ public class GenBankNode extends Node {
 	 * @param pConcept
 	 */
 	public void setConcept(String pConcept) {
-		if(concept==null) {
-			concept = pConcept;
-		}
-		else {
-			StringBuilder cpt = new StringBuilder(concept);
-			cpt.append(" | ");
-			cpt.append(pConcept);
-			concept = cpt.toString();
-		}
+			concept = pConcept;	
 	}
 }

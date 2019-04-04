@@ -103,6 +103,8 @@ public class GenBankRecordParser {
 				break;
 			case "KEYWORDS"://don't do anything for this entry, to change if they have to be processed
 				break;
+			case "DBLINK": //don't do anything for this entry, to change if they have to be processed
+				break;
 			default:
 				log.info( "Find another Key in the Locus section, unprocessed: "+components[0]);
 				break;
@@ -314,16 +316,20 @@ public class GenBankRecordParser {
 			for (Feature feat : record.getFeatures()) {
 				//check source for itv_from and itv_to//
 				//only using the 1st source for now, if there are multiple sources in a record//
-				if (feat.getHeader().contains("source") && seq.getItv_from() == 0) {
-					if (feat.getPosition().contains("order")) {//multiple sources//
-						seq.setItv_from(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("(")+1, feat.getPosition().indexOf(".")).trim()));
-						seq.setItv_to(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("..")+2, feat.getPosition().indexOf(",")).trim()));
-						log.warn("Multiple sources for " + seq.getAccession());
+				try {
+					if (feat.getHeader().contains("source") && seq.getItv_from() == 0) {
+						if (feat.getPosition().contains("order")) {//multiple sources//
+							seq.setItv_from(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("(")+1, feat.getPosition().indexOf(".")).trim()));
+							seq.setItv_to(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("..")+2, feat.getPosition().indexOf(",")).trim()));
+							log.warn("Multiple sources for " + seq.getAccession());
+						}
+						else {//only 1 source//
+							seq.setItv_from(Integer.parseInt(feat.getPosition().substring(0, feat.getPosition().indexOf(".")).trim()));
+							seq.setItv_to(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("..")+2).trim()));
+						}
 					}
-					else {//only 1 source//
-						seq.setItv_from(Integer.parseInt(feat.getPosition().substring(0, feat.getPosition().indexOf(".")).trim()));
-						seq.setItv_to(Integer.parseInt(feat.getPosition().substring(feat.getPosition().indexOf("..")+2).trim()));
-					}
+				} catch (Exception e) {
+					log.fatal( "ERROR PARSING SOURCE " + record.getAccession() + " Error: " + e.getMessage()+ " Skipped adding source.");
 				}
 				switch (feat.getKey()) {
 					case "db_xref" :
@@ -367,7 +373,7 @@ public class GenBankRecordParser {
 		}
 		catch (Exception e) {
 			//don't want the whole parser to quit if it finds an error in 1 record//
-			log.fatal( "ERROR PARSING RECORD" + record.getAccession());
+			log.fatal( "ERROR PARSING RECORD: " + record.getAccession() + " Error: " + e.getMessage());
 		}
 		return record;
 	}
