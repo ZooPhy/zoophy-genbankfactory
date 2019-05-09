@@ -141,7 +141,7 @@ public class GenBankFactory {
 			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
 			String geoNamesIndexDirectory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.index.location");
 			String geoNamesMappingFile = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.mapping.file");
-			
+			String unmatchedHostFilePath = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("unmatched.hosts.file");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -166,6 +166,7 @@ public class GenBankFactory {
 			properties.put("predictor.csv", predictorCSV);
 			properties.put("GeoNamesIndexDir", geoNamesIndexDirectory);
 			properties.put("GeoNamesMappingFile", geoNamesMappingFile);
+			properties.put("UnmatchedHostsFile", unmatchedHostFilePath);
 		} 
 		catch (Exception e) {
 			log.fatal( "error getting properties file");

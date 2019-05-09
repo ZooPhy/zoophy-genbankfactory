@@ -97,7 +97,7 @@ public class Main {
 				gbFact.getFiles(filter);
 				
 				//Update Host TaxonIDs//
-				HostNormalizer hostNorm = new HostAligner();
+				HostNormalizer hostNorm = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 				hostNorm.updateHosts();
 				//update dates//
 				DateNormalizer dateNorm = DateNormalizer.getInstance();
@@ -197,7 +197,7 @@ public class Main {
 	    	else if (args.length < 3 && args[0].equalsIgnoreCase("normalize")) {
 	    		if (args[1].equalsIgnoreCase("host")) {
 	    			gbFact = GenBankFactory.getInstance();
-		 			HostNormalizer hn = new HostAligner();
+		 			HostNormalizer hn = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 					hn.updateHosts();
 	    		}
 	    		else if (args[1].equalsIgnoreCase("location")) {
