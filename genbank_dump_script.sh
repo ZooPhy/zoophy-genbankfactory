@@ -54,10 +54,6 @@ sed -i "s/^\(DB\.Big\.Name\s*=\s*\).*\$/\1$DB_NAME/" src/GenBankFactory.local.pr
 
 echo "Done updating the config file"
 
-# Update GbMetadataUpdater/GBMetadataUpdater.local.properties
-# set Set annotation.DB.Name  to DB.Big.Name
-sed -i "s/^\(annotation\.DB\.Name\s*=\s*\).*\$/\1$DB_NAME/" /home/zoophy/genbank/GbMetadataUpdater/GBMetadataUpdater.local.properties
-
 # Build jar  zoophy-genbankfactory/ run ./build.sh
 
 echo "Building jar for genebankfactory"
@@ -69,24 +65,28 @@ echo "Jar built ..!"
 
 echo "kick off the data dump"
 echo "command"
-java -Xms4G -Xmx8G -jar target/zoophy-genbank-factory-*-jar-with-dependencies.jar dump create -f gbvrl > genebank_dump_`date "+%Y-%m-%d_%H:%M:%S"`.log 2>&1 
+java -Xms4G -Xmx8G -jar target/zoophy-genbank-factory-*-jar-with-dependencies.jar dump create -f gbvrl 
 
 #############################################################################################################################################################
 
-# backup the old ui_index in /home/zoophy/old_versions/
+# backup the old ui_index_main in /home/zoophy/old_versions/
 echo "backup the old ui_index in /home/zoophy/old_versions/ "
-cp -r /home/zoophy/ui_index /home/zoophy/old_versions/ui_index_before_`date +%b%Y`
+cp -r /home/zoophy/indices/ui_index_main /home/zoophy/old_versions/ui_index_before_`date +%b%Y`
 
+rm /home/zoophy/indices/ui_index_main/*
 
 # replace old lucence index with newly created
 echo "replace old lucene index with newly created "
-cp -r /home/zoophy/genbank/small_index /home/zoophy/ui_index
+
+cp -r /home/zoophy/indices/small_index_main/* /home/zoophy/indices/ui_index_main 
+
 
 # Edit configuration file to update the new db name in zoophy-services config file
 echo "updating zoophy services config "
 sed -i "s|^\(spring\.datasource\.url\s*=\s*\).*\$|\1$JDBC_DB_URL|" /home/zoophy/zoophy-services/config/application.properties
 
 # Build & restart the services
+echo "Building zoophy-services.."
 cd /home/zoophy/zoophy-services ; git pull ; ./build.sh
 
 # deploy new zoophy services 
@@ -106,3 +106,4 @@ cd /home/zoophy/zoophy-ui ; git pull
 # no config change unless services port is been changed
 # restart app
 pm2 restart zoophy
+echo "End of Script"
