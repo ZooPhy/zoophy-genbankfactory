@@ -43,6 +43,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		try {
+			log.info("\n\n################################GenBankFactory-Start################################");
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
@@ -94,8 +95,9 @@ public class Main {
 				}
 	 			//Parse Records and Dump//
 				gbFact.getFiles(filter);
+				
 				//Update Host TaxonIDs//
-				HostNormalizer hostNorm = new HostAligner();
+				HostNormalizer hostNorm = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 				hostNorm.updateHosts();
 				//update dates//
 				DateNormalizer dateNorm = DateNormalizer.getInstance();
@@ -128,10 +130,8 @@ public class Main {
 				// Normalize Dates and Extract State Feild
 				DateFormatter dateFormatter = DateFormatter.getInstance();
 				dateFormatter.formatDate();
-				
-				ExtractState extractState = ExtractState.getInstance();
-				extractState.extractState();
-				
+				ExtractGeonames extractGeonameObj = ExtractGeonames.getInstance();
+    			extractGeonameObj.extractGeonames();
 				Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
 				//Collect possible missing Genes//
@@ -164,6 +164,13 @@ public class Main {
 	    		TaxonomyInserter.downloadNewTree(gbFact.getProperty("TaxDumpURL"), gbFact.getProperty("TaxDumpFolder"));
 	    		Indexer indexer = new Indexer(gbFact.getProperty("BigIndex"));
 				indexer.index();
+				//Collect possible missing Genes//
+				HantaNormalizer hantaNorm = new HantaNormalizer();
+				hantaNorm.normalizeSegments();
+				WNVNormalizer wnvNorm = new WNVNormalizer();
+	    		wnvNorm.normalizeNotes();
+	    		ProductChecker poductCheck = ProductChecker.getInstance();
+	    		poductCheck.checkProducts();
 	    	}
 	    	else if (args.length < 2 && args[0].equalsIgnoreCase("funnel")) {
 	    		dao = new GenBankRecordSqlDAO();
@@ -190,7 +197,7 @@ public class Main {
 	    	else if (args.length < 3 && args[0].equalsIgnoreCase("normalize")) {
 	    		if (args[1].equalsIgnoreCase("host")) {
 	    			gbFact = GenBankFactory.getInstance();
-		 			HostNormalizer hn = new HostAligner();
+		 			HostNormalizer hn = new HostAligner(gbFact.getProperty("UnmatchedHostsFile"));
 					hn.updateHosts();
 	    		}
 	    		else if (args[1].equalsIgnoreCase("location")) {
@@ -248,12 +255,13 @@ public class Main {
 	    		//log.fatal( "ERROR! Unrecognized command. Use \"help\" for jar argument instructions.");
 	    		log.fatal("ERROR! Unrecognized command. Use \"help\" for jar argument instructions." );
 	    	}
-	    	log.info("GenBankFactory completed.");
+	    	log.info("################################GenBankFactory-Complete################################");
 			System.exit(0);
 		}
 		catch(Exception e) {
 			//log.fatal( "ERROR running GenBankFactory: " + e.getMessage());
 			log.fatal("ERROR running GenBankFactory: " + e.getMessage());
+			log.info("################################GenBankFactory-Complete-Error################################");
 			e.printStackTrace();
 			System.exit(1);
 		}

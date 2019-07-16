@@ -172,38 +172,41 @@ public class GenBankRecordSqlDAO implements GenBankRecordDAOInt {
 			List<Object> queryParams;
 			for (int i = 0; i < parsedRecords.size(); i++) {
 					seq = parsedRecords.get(i).getSequence();
-					queryParams = new LinkedList<Object>();
-					//add data to sequence_details batch//
-					queryParams.add(seq.getAccession().trim());
-					queryParams.add(seq.getDefinition().trim());
-					queryParams.add(seq.getTax_id());
-					queryParams.add(seq.getOrganism());
-					queryParams.add(seq.getIsolate());
-					queryParams.add(seq.getStrain());
-					queryParams.add(seq.getCollection_date());
-					queryParams.add(seq.getItv_from());
-					queryParams.add(seq.getItv_to());
-					queryParams.add(seq.getComment());
-					queryParams.add(seq.isPH1N1());
-					queryParams.add(seq.getNormalizaed_date());
-					detailsQuery.addBatch(queryParams);
-					seq = null;
-					queryParams.clear();
-					batchSize++;
-					//log.info("Sequence " + seq.getAccession() + "successfully added to the batch");
-					if (batchSize == 1000 || (i == parsedRecords.size()-1 && batchSize > 0)) {
-						detailsQuery.executeBatch();
-						detailsQuery.close();
-						//log.info("Details Batch inserted");
-						batchSize = 0;
-						detailsQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, DETAILS_INSERT);
+					if ( seq.getAccession() != null ) {
+						queryParams = new LinkedList<Object>();
+						//add data to sequence_details batch//
+						queryParams.add(seq.getAccession().trim());
+						queryParams.add(seq.getDefinition().trim());
+						queryParams.add(seq.getTax_id());
+						queryParams.add(seq.getOrganism());
+						queryParams.add(seq.getIsolate());
+						queryParams.add(seq.getStrain());
+						queryParams.add(seq.getCollection_date());
+						queryParams.add(seq.getItv_from());
+						queryParams.add(seq.getItv_to());
+						queryParams.add(seq.getComment());
+						queryParams.add(seq.isPH1N1());
+						queryParams.add(seq.getNormalizaed_date());
+						detailsQuery.addBatch(queryParams);
+						seq = null;
+						queryParams.clear();
+						batchSize++;
+						//log.info("Sequence " + seq.getAccession() + "successfully added to the batch");
+						if (batchSize == 1000 || (i == parsedRecords.size()-1 && batchSize > 0)) {
+							detailsQuery.executeBatch();
+							detailsQuery.close();
+							//log.info("Details Batch inserted");
+							batchSize = 0;
+							detailsQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, DETAILS_INSERT);
+						}
 					}
 			}
 			log.info("Sequence Details successfully inserted");
 		}
 		catch (Exception e) {
-			log.fatal( "ERROR INSERTING SEQUENCE_DETAILS: " + e.getMessage());
+			log.fatal( "ERROR INSERTING SEQUENCE_DETAILS: " + e.getMessage() );
 			throw new Exception("ERROR INSERTING SEQUENCE_DETAILS");
+		
 		} 
 		finally {
 			//close connection//

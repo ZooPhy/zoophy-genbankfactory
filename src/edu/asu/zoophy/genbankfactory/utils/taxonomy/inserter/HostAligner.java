@@ -1,5 +1,6 @@
 package edu.asu.zoophy.genbankfactory.utils.taxonomy.inserter;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,12 +9,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
-
-import org.apache.log4j.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBManager;
 import jp.ac.toyota_ti.coin.wipefinder.server.database.DBQuery;
@@ -44,8 +46,10 @@ public class HostAligner implements HostNormalizer {
 	private int batch_count;
 	private final int BATCH_SIZE = 25000;
 	private Map<String, Set<Integer>> nameToID = new HashMap<String, Set<Integer>>(3700000);
+	private HashMap<String,String> unmatchedHostsMapping = new HashMap<>();
+
 	
-	public HostAligner() throws Exception {
+	public HostAligner(String unmatchedHostFilePath) throws Exception {
 	    try {
 			conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 	    }
@@ -53,6 +57,26 @@ public class HostAligner implements HostNormalizer {
 	    	log.fatal( "Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    	throw new Exception("Impossible to Initiate the Resources Provider:"+e.getMessage());
 	    }
+	    File file = new File(unmatchedHostFilePath);
+	    if (!file.exists() ) {
+ 	    	log.fatal( unmatchedHostFilePath + " does not exist");
+ 	    	throw new Exception("Host file path is not correct.");
+ 	    }
+         
+        Scanner scan = new Scanner(file);
+        String[] wordsArray;
+         
+        while (scan.hasNextLine()  ) {
+         	wordsArray=scan.nextLine().split("\t");
+         	unmatchedHostsMapping.put(wordsArray[0], wordsArray[1]);
+        }
+        
+        log.info("Built Map of Size: " + unmatchedHostsMapping.size());
+        
+        
+ 		if (scan != null) {
+ 			scan.close();
+ 		}
 	}
 	
 	protected void createHashMapTaxon() throws Exception {
@@ -238,6 +262,10 @@ public class HostAligner implements HostNormalizer {
 	 * @throws Exception
 	 */
 	protected Integer applyDirectMapping(String hostName, String Accession) throws Exception {
+		if ( unmatchedHostsMapping.containsKey(hostName) ){
+			return new Integer(unmatchedHostsMapping.get(hostName));
+		}
+		
 		if (hostName.equalsIgnoreCase("udorn")) {
 			//log.info("=> found \"udorn\" replaced by [homo sapiens (ID: 9606)] concept for accession ["+Accession+"]");
 				return new Integer(9606);

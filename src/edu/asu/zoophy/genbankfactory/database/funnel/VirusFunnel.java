@@ -6,8 +6,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
-
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -45,11 +44,11 @@ public class VirusFunnel {
 			indexDirectory = FSDirectory.open(Paths.get(BIG_INDEX_LOCATION));
 			reader = DirectoryReader.open(indexDirectory);
 			indexSearcher = new IndexSearcher(reader);
-			queryParser = new QueryParser("Accession", new KeywordAnalyzer());
+			queryParser = new QueryParser("Accession", new StandardAnalyzer());
 			accs = new HashSet<String>();
 			funnelled = 0;
 			//WNV//
-			query = queryParser.parse("TaxonID:11082");
+			query = queryParser.parse("OrganismID:11082");
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -58,7 +57,7 @@ public class VirusFunnel {
 		    log.info("Funneling "+(accs.size()-funnelled)+" WNV records...");
 		    funnelled = accs.size();
 		    //Zika//
-			query = queryParser.parse("TaxonID:64320");
+			query = queryParser.parse("OrganismID:64320");
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -67,7 +66,7 @@ public class VirusFunnel {
 		    log.info("Funneling "+(accs.size()-funnelled)+" Zika records...");
 		    funnelled = accs.size();
 			//Ebola//
-			query = queryParser.parse("TaxonID:186536");
+			query = queryParser.parse("OrganismID:186536");
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -75,17 +74,8 @@ public class VirusFunnel {
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Ebola records...");
 		    funnelled = accs.size();
-		    //Hanta//
-			query = queryParser.parse("TaxonID:11598");
-			docs = indexSearcher.search(query, 1000000);
-			for (ScoreDoc scoreDoc : docs.scoreDocs) {
-		         Document doc = indexSearcher.doc(scoreDoc.doc);
-		         accs.add(doc.get("Accession"));
-		    }
-		    log.info("Funneling "+(accs.size()-funnelled)+" Hanta records...");
-		    funnelled = accs.size();
 		    //Rabies//
-			query = queryParser.parse("TaxonID:11292");
+			query = queryParser.parse("OrganismID:11292");
 			docs = indexSearcher.search(query, 1000000);
 			for(ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -93,8 +83,17 @@ public class VirusFunnel {
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" Rabies records...");
 		    funnelled = accs.size();
+		    // MERS //
+		    query = queryParser.parse("OrganismID:1335626");
+			docs = indexSearcher.search(query, 1000000);
+			for(ScoreDoc scoreDoc : docs.scoreDocs) {
+		         Document doc = indexSearcher.doc(scoreDoc.doc);
+		         accs.add(doc.get("Accession"));
+		    }
+		    log.info("Funneling "+(accs.size()-funnelled)+" MERS-Coronavirus records...");
+		    funnelled = accs.size();
 			//Flu A//
-			query = queryParser.parse("TaxonID:197911");
+			query = queryParser.parse("OrganismID:197911");
 			docs = indexSearcher.search(query, 1000000);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
 		         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -103,7 +102,7 @@ public class VirusFunnel {
 		    log.info("Funneling "+(accs.size()-funnelled)+" Flu A records...");
 		    funnelled = accs.size();
 	    	//Flu B//
-	  		query = queryParser.parse("TaxonID:197912");
+	  		query = queryParser.parse("OrganismID:197912");
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);
@@ -112,7 +111,7 @@ public class VirusFunnel {
 	  	    log.info("Funneling "+(accs.size()-funnelled)+" Flu B records...");
 	  	    funnelled = accs.size();
 	  	    //Flu C//
-	  		query = queryParser.parse("TaxonID:197913");
+	  		query = queryParser.parse("OrganismID:197913");
 	  		docs = indexSearcher.search(query, 1000000);
 	  		for (ScoreDoc scoreDoc : docs.scoreDocs) {
 	  	         Document doc = indexSearcher.doc(scoreDoc.doc);

@@ -38,6 +38,8 @@ public class GeneNormalizer {
 	protected static final int[] fluBTaxons = {197912,11520,439488};
 	private static HashMap<String,String> fluBMappings = new HashMap<String,String>();
 	protected static final int[] fluCTaxons = {197913,439488,11552};
+	private static HashMap<String,String> mersMappings = new HashMap<String,String>();
+	protected static final int[] mersTaxons = {1335626};
 	private static HashMap<String,String> fluCMappings = new HashMap<String,String>();
 	private static HashSet<Integer> unmapped_taxons = new HashSet<Integer>();
 	private static int successes;
@@ -57,6 +59,7 @@ public class GeneNormalizer {
 	private List<String> ebolaGenes;
 	private List<String> hantaGenes;
 	private List<String> fluAGenes;
+	private List<String> mersGenes;
 	
 	private static GeneNormalizer normalizer = null;
 	
@@ -244,6 +247,9 @@ public class GeneNormalizer {
 		}
 		else if (Arrays.binarySearch(zikaTaxons, virusTaxon) >= 0) {
 			return zikaGenes;
+		}
+		else if (Arrays.binarySearch(mersTaxons, virusTaxon) >= 0) {
+			return mersGenes;
 		}
 		return null;
 	}
@@ -638,6 +644,7 @@ public class GeneNormalizer {
 		ebolaGenes = Arrays.asList("NP","VP35","VP40","GP","VP30","VP24","L");
 		hantaGenes = Arrays.asList("S","M","L");
 		fluAGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
+		mersGenes = Arrays.asList("ORF1ab","S","ns3A","ns3B","ns3C","ns3D","E","M","N");
 	}
 	
 }

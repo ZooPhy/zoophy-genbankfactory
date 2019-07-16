@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -55,7 +54,7 @@ public class HantaNormalizer {
 		indexDirectory = FSDirectory.open(Paths.get(fact.getProperty("BigIndex")));
 		reader = DirectoryReader.open(indexDirectory);
 		indexSearcher = new IndexSearcher(reader);
-		queryParser = new QueryParser("Accession", new KeywordAnalyzer());
+		queryParser = new QueryParser("Accession", new StandardAnalyzer());
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class HantaNormalizer {
 			Connection conn = ((DBManager)ResourceProvider.getResource("DBGenBank")).getConnection();
 			insertQuery =new DBQuery(conn, DBQuery.QT_INSERT_BATCH, INSERT_SEGMENTS);
 			log.info("Finding Hanta Accessions with missing Genes...");
-			pullQuery = queryParser.parse("TaxonID:11598");
+			pullQuery = queryParser.parse("OrganismID:11598");
 			docs = indexSearcher.search(pullQuery, 1000000);
 			accs = new LinkedHashSet<String>(docs.scoreDocs.length, 0.9f);
 			for (ScoreDoc scoreDoc : docs.scoreDocs) {
