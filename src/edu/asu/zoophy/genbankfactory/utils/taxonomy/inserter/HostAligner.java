@@ -68,7 +68,7 @@ public class HostAligner implements HostNormalizer {
          
         while (scan.hasNextLine()  ) {
          	wordsArray=scan.nextLine().split("\t");
-         	unmatchedHostsMapping.put(wordsArray[0], wordsArray[1]);
+         	unmatchedHostsMapping.put(wordsArray[0].toLowerCase(), wordsArray[1]);
         }
         
         log.info("Built Map of Size: " + unmatchedHostsMapping.size());
@@ -148,7 +148,7 @@ public class HostAligner implements HostNormalizer {
 						name = filterVirusHost(name, accession);
 					}
 					//first we apply direct mapping rules which link certain entry for our DB
-					ID = applyDirectMapping(name, accession);
+					ID = applyDirectMapping(name.toLowerCase(), accession);
 				}
 				if (ID == null) {
 					//not find in the direct mapping, try to match exactly to an entry in the taxonomy which is not ambiguous
