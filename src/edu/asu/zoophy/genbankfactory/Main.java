@@ -241,7 +241,7 @@ public class Main {
 	    			gbFact = GenBankFactory.getInstance();
 	    			ExtractState extractState = ExtractState.getInstance();
 					extractState.extractState();
-	    		}if (args[1].equalsIgnoreCase("geoname")) {
+	    		}else if (args[1].equalsIgnoreCase("geoname")) {
 	    			gbFact = GenBankFactory.getInstance();
 	    			ExtractGeonames extractGeonameObj = ExtractGeonames.getInstance();
 	    			extractGeonameObj.extractGeonames();
