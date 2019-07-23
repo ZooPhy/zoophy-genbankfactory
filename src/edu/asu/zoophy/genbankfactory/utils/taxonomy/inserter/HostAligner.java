@@ -453,7 +453,7 @@ public class HostAligner implements HostNormalizer {
 		// TODO: If multiple are found then just choose the first one and log the decision.
 		// If incorrect id is assigned then it can be found from the log and assigned in ID map
 		if (ids.size() > 1) {
-			disambId = ids.iterator().next();
+			int disambId = ids.iterator().next();
 			StringBuilder msg = new StringBuilder("~> Entry ["+name+"] found in the taxonomy but it has multiple IDs associated [");
 			for(Integer id: ids) {
 				msg.append(id);
