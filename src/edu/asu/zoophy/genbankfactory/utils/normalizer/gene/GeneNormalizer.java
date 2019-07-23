@@ -38,9 +38,9 @@ public class GeneNormalizer {
 	protected static final int[] fluBTaxons = {197912,11520,439488};
 	private static HashMap<String,String> fluBMappings = new HashMap<String,String>();
 	protected static final int[] fluCTaxons = {197913,439488,11552};
-	private static HashMap<String,String> mersMappings = new HashMap<String,String>();
-	protected static final int[] mersTaxons = {1335626};
 	private static HashMap<String,String> fluCMappings = new HashMap<String,String>();
+	protected static final int[] mersTaxons = {1335626};
+	private static HashMap<String,String> mersMappings = new HashMap<String,String>();
 	private static HashSet<Integer> unmapped_taxons = new HashSet<Integer>();
 	private static int successes;
 	
@@ -279,6 +279,9 @@ public class GeneNormalizer {
 		}
 		else if (Arrays.binarySearch(fluATaxons, virusTaxon) >= 0) {
 			return fluAMappings.get(rawName);
+		}
+		else if (Arrays.binarySearch(mersTaxons, virusTaxon) >= 0) {
+			return mersMappings.get(rawName);
 		}
 		else {
 			unmapped_taxons.add(virusTaxon);
@@ -635,6 +638,17 @@ public class GeneNormalizer {
 		fluCMappings.put("np\"", "NP");
 		fluCMappings.put("nep/ns2", "NS");
 		fluCMappings.put("p42", "M");
+		//MERS//
+		mersMappings.put("orf1ab","ORF1ab");
+		mersMappings.put("s","S");
+		mersMappings.put("ns3a","ns3A");
+		mersMappings.put("ns3b","ns3B");
+		mersMappings.put("ns3c","ns3C");
+		mersMappings.put("ns3d","ns3D");
+		mersMappings.put("e","E");
+		mersMappings.put("m","M");
+		mersMappings.put("n","N");
+		// "ORF1ab","S","ns3A","ns3B","ns3C","ns3D","E","M","N"
 		//gene lists//
 		zikaGenes = Arrays.asList("C","M","E","NS");
 		fluBGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");

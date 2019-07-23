@@ -138,10 +138,11 @@ public class GenBankFactory {
 			String taxDumpFolder = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy");
 			String taxDumpURL = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.taxonomy.url");
 			String pH1N1List = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("ph1n1.list");
-			String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
-			String geoNamesIndexDirectory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.index.location");
-			String geoNamesMappingFile = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.mapping.file");
 			String unmatchedHostFilePath = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("unmatched.hosts.file");
+			// Unused properties - to be removed in the future
+			// String predictorCSV = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("predictor.csv");
+			// String geoNamesIndexDirectory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.index.location");
+			// String geoNamesMappingFile = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("geonames.mapping.file");
 			
 			properties.put("GenBankURL", genbank_url);
 			properties.put("PmcidURL", pmcid_url);
@@ -163,10 +164,11 @@ public class GenBankFactory {
 			properties.put("BigIndex", bigIndex);
 			properties.put("SmallIndex", smallIndex);
 			properties.put("PH1N1List", pH1N1List);
-			properties.put("predictor.csv", predictorCSV);
-			properties.put("GeoNamesIndexDir", geoNamesIndexDirectory);
-			properties.put("GeoNamesMappingFile", geoNamesMappingFile);
 			properties.put("UnmatchedHostsFile", unmatchedHostFilePath);
+			// Unused properties - to be removed in the future
+			// properties.put("predictor.csv", predictorCSV);
+			// properties.put("GeoNamesIndexDir", geoNamesIndexDirectory);
+			// properties.put("GeoNamesMappingFile", geoNamesMappingFile);
 		} 
 		catch (Exception e) {
 			log.fatal( "error getting properties file");

@@ -40,11 +40,11 @@ geo.dir=
 geo.url=http://download.geonames.org/export/dump/
 # pmcid to pmid mapping csv folder
 pmcid.csv.dir=
-# path to geoname updator folder
+# path to geoname updater resource folder
 geoname.updater.dir=
 # path to pH1N1 accession .txt list
 ph1n1.list=
-# path to Dan's US predictor csv file
-predictor.csv=
 # path to file containing direct mapping of unmatched hosts
 unmatched.hosts.file=
+# path to Dan's US predictor csv file - unused for now
+predictor.csv=

@@ -1,10 +1,13 @@
+bin/
+target/
+logs/
+Resources
+trash/
 *.DS_Store
 .settings
 .project
-/target/
 *.local.properties
 src/GenBankFactory.local.properties
-bin/
 .classpath
 *.class
 *.log
