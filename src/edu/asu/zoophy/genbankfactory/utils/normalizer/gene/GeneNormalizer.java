@@ -197,7 +197,8 @@ public class GeneNormalizer {
 				return taxon;
 			}
 		}
-		log.fatal( "Could not map taxon: "+taxon);
+		if (taxon != 1)
+			log.fatal( "Could not map taxon: "+taxon);
 		return taxon;
 	}
 
