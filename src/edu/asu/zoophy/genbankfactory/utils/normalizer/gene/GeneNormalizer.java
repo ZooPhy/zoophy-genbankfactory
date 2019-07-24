@@ -639,16 +639,45 @@ public class GeneNormalizer {
 		fluCMappings.put("nep/ns2", "NS");
 		fluCMappings.put("p42", "M");
 		//MERS//
+		// some equivalencies taken from Table 3 of paper
+		//  https://mbio.asm.org/content/3/6/e00473-12/figures-only
+		mersMappings.put("orf1a","ORF1a");
+		mersMappings.put("orf1b","ORF1b");
 		mersMappings.put("orf1ab","ORF1ab");
+		mersMappings.put("orf3","ORF3");
+		mersMappings.put("orf4a","ORF4A");
+		mersMappings.put("orf4b","ORF4B");
+		mersMappings.put("orf 5","ORF5");
+		mersMappings.put("orf 8b","ORF8b");
+		mersMappings.put("orf 1a","ORF1a");
+		mersMappings.put("orf 1b","ORF1b");
+		mersMappings.put("orf 1ab","ORF1ab");
+		mersMappings.put("orf 3","ORF3");
+		mersMappings.put("orf 4a","ORF4A");
+		mersMappings.put("orf 4b","ORF4B");
+		mersMappings.put("orf 5","ORF5");
+		mersMappings.put("orf 8b","ORF8b");
+		mersMappings.put("ns3a","ORF3");
+		mersMappings.put("ns3b","ORF4A");
+		mersMappings.put("ns3c","ORF4B");
+		mersMappings.put("ns3d","ORF5");
 		mersMappings.put("s","S");
-		mersMappings.put("ns3a","ns3A");
-		mersMappings.put("ns3b","ns3B");
-		mersMappings.put("ns3c","ns3C");
-		mersMappings.put("ns3d","ns3D");
 		mersMappings.put("e","E");
 		mersMappings.put("m","M");
 		mersMappings.put("n","N");
-		// "ORF1ab","S","ns3A","ns3B","ns3C","ns3D","E","M","N"
+		mersMappings.put("s protein","S");
+		mersMappings.put("e protein","E");
+		mersMappings.put("m protein","M");
+		mersMappings.put("n protein","N");
+		mersMappings.put("spike","S");
+		mersMappings.put("envelope","E");
+		mersMappings.put("membrane","M");
+		mersMappings.put("spike protein","S");
+		mersMappings.put("envelope protein","E");
+		mersMappings.put("membrane protein","M");
+		mersMappings.put("nucleoprotein","N");
+		mersMappings.put("nucleocapsid","N");
+		mersMappings.put("replicase polyprotein","ORF1ab");
 		//gene lists//
 		zikaGenes = Arrays.asList("C","M","E","NS");
 		fluBGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
