@@ -649,7 +649,7 @@ public class GeneNormalizer {
 		mersMappings.put("orf4a","ORF4A");
 		mersMappings.put("orf4b","ORF4B");
 		mersMappings.put("orf5","ORF5");
-		mersMappings.put("orf 8b","ORF8b");
+		mersMappings.put("orf8b","ORF8b");
 		mersMappings.put("orf 1a","ORF1a");
 		mersMappings.put("orf 1b","ORF1b");
 		mersMappings.put("orf 1ab","ORF1ab");
@@ -674,6 +674,7 @@ public class GeneNormalizer {
 		mersMappings.put("envelope","E");
 		mersMappings.put("membrane","M");
 		mersMappings.put("spike protein","S");
+		mersMappings.put("spike glycoprotein","S");
 		mersMappings.put("envelope protein","E");
 		mersMappings.put("membrane protein","M");
 		mersMappings.put("nucleoprotein","N");
