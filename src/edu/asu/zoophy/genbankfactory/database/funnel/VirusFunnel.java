@@ -92,6 +92,15 @@ public class VirusFunnel {
 		    }
 		    log.info("Funneling "+(accs.size()-funnelled)+" MERS-Coronavirus records...");
 		    funnelled = accs.size();
+		    // COVID -2019 i.e. SARS CoV 2 //
+		    query = queryParser.parse("OrganismID:2697049");
+			docs = indexSearcher.search(query, 1000000);
+			for(ScoreDoc scoreDoc : docs.scoreDocs) {
+		         Document doc = indexSearcher.doc(scoreDoc.doc);
+		         accs.add(doc.get("Accession"));
+		    }
+		    log.info("Funneling "+(accs.size()-funnelled)+" COVID / SARS CoV-2 records...");
+		    funnelled = accs.size();
 			//Flu A//
 			query = queryParser.parse("OrganismID:197911");
 			docs = indexSearcher.search(query, 1000000);

@@ -41,6 +41,8 @@ public class GeneNormalizer {
 	private static HashMap<String,String> fluCMappings = new HashMap<String,String>();
 	protected static final int[] mersTaxons = {1335626};
 	private static HashMap<String,String> mersMappings = new HashMap<String,String>();
+	protected static final int[] covidTaxons = {2697049};
+	private static HashMap<String,String> covidMappings = new HashMap<String,String>();
 	private static HashSet<Integer> unmapped_taxons = new HashSet<Integer>();
 	private static int successes;
 	
@@ -60,6 +62,7 @@ public class GeneNormalizer {
 	private List<String> hantaGenes;
 	private List<String> fluAGenes;
 	private List<String> mersGenes;
+	private List<String> covidGenes;
 	
 	private static GeneNormalizer normalizer = null;
 	
@@ -252,6 +255,9 @@ public class GeneNormalizer {
 		else if (Arrays.binarySearch(mersTaxons, virusTaxon) >= 0) {
 			return mersGenes;
 		}
+		else if (Arrays.binarySearch(covidTaxons, virusTaxon) >= 0) {
+			return covidGenes;
+		}
 		return null;
 	}
 
@@ -283,6 +289,9 @@ public class GeneNormalizer {
 		}
 		else if (Arrays.binarySearch(mersTaxons, virusTaxon) >= 0) {
 			return mersMappings.get(rawName);
+		}
+		else if (Arrays.binarySearch(covidTaxons, virusTaxon) >= 0) {
+			return covidMappings.get(rawName);
 		}
 		else {
 			unmapped_taxons.add(virusTaxon);
@@ -680,6 +689,28 @@ public class GeneNormalizer {
 		mersMappings.put("nucleoprotein","N");
 		mersMappings.put("nucleocapsid","N");
 		mersMappings.put("replicase polyprotein","ORF1ab");
+		mersMappings.put("orf1ab polyprotein","ORF1ab");
+		//COVID Mappings inherited partially from MERS//
+		covidMappings.put("orf1ab","ORF1ab");
+		covidMappings.put("orf 1ab","ORF1ab");
+		covidMappings.put("s","S");
+		covidMappings.put("e","E");
+		covidMappings.put("m","M");
+		covidMappings.put("n","N");
+		covidMappings.put("s protein","S");
+		covidMappings.put("e protein","E");
+		covidMappings.put("m protein","M");
+		covidMappings.put("n protein","N");
+		covidMappings.put("spike","S");
+		covidMappings.put("envelope","E");
+		covidMappings.put("membrane","M");
+		covidMappings.put("spike protein","S");
+		covidMappings.put("spike glycoprotein","S");
+		covidMappings.put("envelope protein","E");
+		covidMappings.put("membrane protein","M");
+		covidMappings.put("nucleoprotein","N");
+		covidMappings.put("nucleocapsid","N");
+		covidMappings.put("replicase polyprotein","ORF1ab");
 		//gene lists//
 		zikaGenes = Arrays.asList("C","M","E","NS");
 		fluBGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
@@ -690,6 +721,7 @@ public class GeneNormalizer {
 		hantaGenes = Arrays.asList("S","M","L");
 		fluAGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
 		mersGenes = Arrays.asList("ORF1ab","S","ns3A","ns3B","ns3C","ns3D","E","M","N");
+		covidGenes = Arrays.asList("ORF1ab","S","E","M","N");
 	}
 	
 }
