@@ -48,7 +48,7 @@ public class GeneNormalizer {
 	
 	private static Connection conn = null;
 	private final String UPDATE_GENE_NAME = "UPDATE \"Gene\" SET \"Normalized_Gene_Name\"=? WHERE \"Gene_ID\"=?";
-	private final String PULL_GENES = "SELECT \"Gene_ID\", \"Gene_Name\", \"Tax_ID\" FROM \"Gene\" JOIN \"Sequence_Details\" ON \"Sequence_Details\".\"Accession\"=\"Gene\".\"Accession\" WHERE \"Normalized_Gene_Name\" IS NULL ORDER BY \"Gene_ID\" ASC";
+	private final String PULL_GENES = "SELECT \"Gene_ID\", \"Gene_Name\", \"Tax_ID\" FROM \"Gene\" JOIN \"Sequence_Details\" ON \"Sequence_Details\".\"Accession\"=\"Gene\".\"Accession\" WHERE \"Normalized_Gene_Name\" IS NULL OR \"Normalized_Gene_Name\"=? ORDER BY \"Gene_ID\" ASC";
 	private List<TempGene> genes;
 	private List<Object> queryParams;
 	private final int BATCH_SIZE =50000;
@@ -655,21 +655,21 @@ public class GeneNormalizer {
 		mersMappings.put("orf1b","ORF1b");
 		mersMappings.put("orf1ab","ORF1ab");
 		mersMappings.put("orf3","ORF3");
-		mersMappings.put("orf4a","ORF4A");
-		mersMappings.put("orf4b","ORF4B");
+		mersMappings.put("orf4a","ORF4a");
+		mersMappings.put("orf4b","ORF4b");
 		mersMappings.put("orf5","ORF5");
 		mersMappings.put("orf8b","ORF8b");
 		mersMappings.put("orf 1a","ORF1a");
 		mersMappings.put("orf 1b","ORF1b");
 		mersMappings.put("orf 1ab","ORF1ab");
 		mersMappings.put("orf 3","ORF3");
-		mersMappings.put("orf 4a","ORF4A");
-		mersMappings.put("orf 4b","ORF4B");
+		mersMappings.put("orf 4a","ORF4a");
+		mersMappings.put("orf 4b","ORF4b");
 		mersMappings.put("orf 5","ORF5");
 		mersMappings.put("orf 8b","ORF8b");
 		mersMappings.put("ns3a","ORF3");
-		mersMappings.put("ns3b","ORF4A");
-		mersMappings.put("ns3c","ORF4B");
+		mersMappings.put("ns3b","ORF4a");
+		mersMappings.put("ns3c","ORF4b");
 		mersMappings.put("ns3d","ORF5");
 		mersMappings.put("s","S");
 		mersMappings.put("e","E");
@@ -690,9 +690,16 @@ public class GeneNormalizer {
 		mersMappings.put("nucleocapsid","N");
 		mersMappings.put("replicase polyprotein","ORF1ab");
 		mersMappings.put("orf1ab polyprotein","ORF1ab");
-		//COVID Mappings inherited partially from MERS//
+		//COVID (SARS CoV-2) Mappings - needs to be condensed later
 		covidMappings.put("orf1ab","ORF1ab");
 		covidMappings.put("orf 1ab","ORF1ab");
+		covidMappings.put("orf1a","ORF1a");
+		covidMappings.put("orf1b","ORF1b");
+		covidMappings.put("orf3a","ORF3a");
+		covidMappings.put("orf6","ORF6");
+		covidMappings.put("orf7a","ORF7a");
+		covidMappings.put("orf8","ORF8");
+		covidMappings.put("orf10","ORF10");
 		covidMappings.put("s","S");
 		covidMappings.put("e","E");
 		covidMappings.put("m","M");
@@ -703,6 +710,11 @@ public class GeneNormalizer {
 		covidMappings.put("n protein","N");
 		covidMappings.put("spike","S");
 		covidMappings.put("envelope","E");
+		covidMappings.put("ns3","NS3");
+		covidMappings.put("ns6","NS6");
+		covidMappings.put("ns7a","NS7a");
+		covidMappings.put("ns7b","NS7b");
+		covidMappings.put("ns8","NS8");
 		covidMappings.put("membrane","M");
 		covidMappings.put("spike protein","S");
 		covidMappings.put("spike glycoprotein","S");
@@ -720,8 +732,8 @@ public class GeneNormalizer {
 		ebolaGenes = Arrays.asList("NP","VP35","VP40","GP","VP30","VP24","L");
 		hantaGenes = Arrays.asList("S","M","L");
 		fluAGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
-		mersGenes = Arrays.asList("ORF1ab","S","ns3A","ns3B","ns3C","ns3D","E","M","N");
-		covidGenes = Arrays.asList("ORF1ab","S","E","M","N");
+		mersGenes = Arrays.asList("ORF1ab","S","E","M","N","ORF1a","ORF1b","ORF3","ORF4a","ORF4b","ORF5","ORF8b");
+		covidGenes = Arrays.asList("ORF1ab","S","E","M","N","ORF1a","ORF1b","ORF3a","ORF6","ORF7a","ORF8","ORF10","NSF3","NS6","NS7a","NS7b","NS8");
 	}
 	
 }

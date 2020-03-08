@@ -71,11 +71,12 @@ public class GenBankTree extends Tree {
 				String className = rs.getString("class");
 				GenBankNode node = mapIDNodes.get(id);
 				if(node==null) {
-					log.fatal( "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't beSen inserted in the tree");
-					throw new Exception("Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
-				}
-				if (className.equals("genbank common name") || (className.equals("scientific name") && node.getConcept() == null )) { 
-					node.setConcept(name);
+					log.warn( "Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
+					// throw new Exception("Apparently we have a node ID ["+id+"] for the concept ["+name+"] which hasn't been inserted in the tree");
+				} else {
+					if (className.equals("genbank common name") || (className.equals("scientific name") && node.getConcept() == null )) { 
+						node.setConcept(name);
+					}
 				}
 			}
 			// debug GenBankTree concept
