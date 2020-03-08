@@ -733,7 +733,7 @@ public class GeneNormalizer {
 		hantaGenes = Arrays.asList("S","M","L");
 		fluAGenes = Arrays.asList("PB2","PB1","PA","HA","NP","NA","M","NS");
 		mersGenes = Arrays.asList("ORF1ab","S","E","M","N","ORF1a","ORF1b","ORF3","ORF4a","ORF4b","ORF5","ORF8b");
-		covidGenes = Arrays.asList("ORF1ab","S","E","M","N","ORF1a","ORF1b","ORF3a","ORF6","ORF7a","ORF8","ORF10","NSF3","NS6","NS7a","NS7b","NS8");
+		covidGenes = Arrays.asList("ORF1ab","S","E","M","N","ORF1a","ORF1b","ORF3a","ORF6","ORF7a","ORF8","ORF10","NS3","NS6","NS7a","NS7b","NS8");
 	}
 	
 }
