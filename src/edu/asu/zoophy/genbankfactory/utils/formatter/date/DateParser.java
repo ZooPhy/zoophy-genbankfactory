@@ -17,6 +17,11 @@ public class DateParser {
 			    .parseDefaulting(ChronoField.DAY_OF_MONTH, 1) 
 			    .toFormatter(Locale.ENGLISH);
 		
+		DateTimeFormatter yearMonthFormatter = new DateTimeFormatterBuilder()
+				.appendPattern("uuuu-MM")
+				.parseDefaulting(ChronoField.DAY_OF_MONTH,1)
+				.toFormatter(Locale.ENGLISH);
+		
 		DateTimeFormatter yearFormatter = new DateTimeFormatterBuilder()
 				.appendPattern("uuuu")
 				.parseDefaulting(ChronoField.MONTH_OF_YEAR, 7)
@@ -28,16 +33,16 @@ public class DateParser {
 		if (parse(dateString,defaultFormatter)) {
 			localDate = LocalDate.parse(dateString, defaultFormatter);
 			normalizedDate = localDate.format(defaultFormatter);
-			
+		} else if (parse(dateString, yearMonthFormatter)) {
+			localDate = LocalDate.parse(dateString, yearMonthFormatter);
+			normalizedDate = localDate.format(defaultFormatter);
 		} else if (parse(dateString,monthYearFormatter)) {
 			localDate = LocalDate.parse(dateString, monthYearFormatter);
 			normalizedDate = localDate.format(defaultFormatter);
-		}
-		else if (parse(dateString, yearFormatter)){
+		} else if (parse(dateString, yearFormatter)){
 			localDate = LocalDate.parse(dateString, yearFormatter);
 			normalizedDate = localDate.format(defaultFormatter);
-			
-		}if (parse(dateString, reverseDateFormatter)) {
+		} else if (parse(dateString, reverseDateFormatter)) {
 			localDate = LocalDate.parse(dateString, reverseDateFormatter);
 			normalizedDate = localDate.format(defaultFormatter);
 		}
@@ -46,14 +51,11 @@ public class DateParser {
 	}
 	
 	public static boolean parse(String date, DateTimeFormatter dateFormat) {
-		
 		try {
 			LocalDate.parse(date, dateFormat);
 			return true;
-			
-		}catch (Exception e) {
+		} catch (Exception e) {
 			return false;
-			
 		}
 	}
 
