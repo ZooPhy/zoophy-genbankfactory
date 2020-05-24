@@ -50,6 +50,7 @@ public class GenBankFactory {
 	private static int file_limit;
 	private static boolean isDownload_only = false;
 	//non static variables
+	private String genbankrefdb_url; 
 	private String genbank_url; 
 	private String pmcid_url;
 	private String start_at_file;
@@ -113,6 +114,7 @@ public class GenBankFactory {
 		try {
 			properties = new HashMap<String, String>();
 			genbank_url = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbank.download_url");
+			genbankrefdb_url = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("genbankrefdb.download_url");
 			pmcid_url = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("pmcid.download_url");
 			gb_directory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("gzip.directory");
 			pmcid_directory = (String)ResourceProvider.getPropertiesProvider(RP_PROVIDED_RESOURCES.PROPERTIES_PROVIDER).getValue("pmcid.csv.dir");
@@ -203,7 +205,7 @@ public class GenBankFactory {
 			        	if(start_at_file == null || filename.equals(start_at_file + ".seq.gz")){
 							start_at_file = null; //found file to start from
 							log.info("********* Reading " + filename + " *********");
-							ArrayList<GenBankRecord> parsedRecords = processFile(filename);
+							ArrayList<GenBankRecord> parsedRecords = processFile(filename, true);
 							dao.dumpRecords(parsedRecords);
 							log.info("Finished with file " + filename);
 							file_limit--;
@@ -222,6 +224,7 @@ public class GenBankFactory {
 				downloadCSV();
 				mapper = new PmidPmcidMapperCSV(pmcid_directory);
 				document = Jsoup.connect(genbank_url).get();
+				// download links from genbank
 				Elements links = document.select("a");
 				for(int i = 0; i < links.size(); i++) {
 					if(file_limit == 0) {
@@ -231,10 +234,10 @@ public class GenBankFactory {
 					if(filter(".seq.gz", filename) && !filter("gbcon", filename) && filter(filter, filename)) {
 						if(start_at_file == null || filename.equals(start_at_file + ".seq.gz")) {
 							start_at_file = null; //found file to start from
-							download(filename);
+							download(genbank_url, filename);
 							if(!isDownload_only) {
 								log.info("Reading " + filename);
-								ArrayList<GenBankRecord> parsedRecords = processFile(filename);
+								ArrayList<GenBankRecord> parsedRecords = processFile(filename, true);
 								dao.dumpRecords(parsedRecords);
 								log.info("Finished batch on " + filename);
 								remove(filename);
@@ -243,8 +246,24 @@ public class GenBankFactory {
 						}
 					}
 				}
+				// download links from reference sequence database
+				document = Jsoup.connect(genbankrefdb_url).get();
+				links = document.select("a");
+				for(int i = 0; i < links.size(); i++) {
+					String filename = links.get(i).toString().split("[\\<\\>]")[2];
+					if(filter(".gbff.gz", filename)) {
+						download(genbankrefdb_url, filename);
+						if(!isDownload_only) {
+							log.info("Reading " + filename);
+							ArrayList<GenBankRecord> parsedRecords = processFile(filename, false);
+							dao.dumpRecords(parsedRecords);
+							log.info("Finished batch on " + filename);
+							remove(filename);
+						}
+					}
+				}
 				deleteCSV();
-			} 
+			}
 			catch (IOException e) {
 				log.fatal( "IOException in getFiles(): "+e.getMessage());
 				throw new Exception("IOException in getFiles(): "+e.getMessage());
@@ -404,10 +423,10 @@ public class GenBankFactory {
 	 * This method is called by getFiles(). It downloads the specified gzip file
 	 * into the specified gb_directory
 	 */
-	public void download(String filename) {
+	public void download(String rooturl, String filename) {
 		log.info("Downloading " + filename);
 		String dir = gb_directory + filename;
-		String fileUrl = genbank_url + "/" + filename;
+		String fileUrl = rooturl + "/" + filename;
 		InputStream in = null;
 	    FileOutputStream fout = null;
 	    try {
@@ -451,7 +470,7 @@ public class GenBankFactory {
 	 * @param filename
 	 * @return records proccessed from the given file
 	 */
-	public ArrayList<GenBankRecord> processFile(String filename) {
+	public ArrayList<GenBankRecord> processFile(String filename, boolean hasHeader) {
 		ArrayList<GenBankRecord> processedRecords = null;
 		String encoding = "UTF-8";
 		InputStream fileStream;
@@ -462,19 +481,21 @@ public class GenBankFactory {
 			Reader decoder = new InputStreamReader(gzipStream, encoding);
 			buffered = new BufferedReader(decoder);
 			//skip header
-			for(int i = 0; i < 10; i++) {
-				String s = buffered.readLine();
-				if (s.contains("reported sequences")) {
-					s = s.substring(0, s.indexOf("loci")-1).trim();
-					avail = Integer.parseInt(s);
+			if (hasHeader) {
+				for(int i = 0; i < 10; i++) {
+					String s = buffered.readLine();
+					if (s.contains("reported sequences")) {
+						s = s.substring(0, s.indexOf("loci")-1).trim();
+						avail = Integer.parseInt(s);
+					}
 				}
 			}
 			processedRecords = processLoci(buffered);
 			log.info("Read " + processedRecords.size() + " loci out of " + avail + " total from " + filename);
 			recordsProcessed += processedRecords.size();
 			recordsAvailable += avail;
-			if (avail != processedRecords.size()) {
-				log.fatal( "ERROR!!! MISSING " + (avail-processedRecords.size()) + " RECORDS!!!");
+			if (avail > processedRecords.size()) {
+				log.warn( "ERROR!!! MISSING " + (avail-processedRecords.size()) + " RECORDS!!!");
 			}
 		} 
 		catch (IOException e) {

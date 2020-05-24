@@ -29,7 +29,7 @@ import jp.ac.toyota_ti.coin.wipefinder.server.utils.ResourceProvider.RP_PROVIDED
 /**
  * Main class when executing the data jump via .jar
  * Originally the main method was in the GenBankFactory class, but for some reason java suddenly stopped being able to find it in there.
- * @author demetri
+ * @author demetri, amagge
  */
 public class Main {
 
@@ -47,7 +47,6 @@ public class Main {
 			GenBankFactory gbFact;
 			TaxonomyInserter taxo = null;
 	    	if (args.length < 1) {
-	    		//log.fatal( "ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    		log.fatal("ERROR! Please specify arguments. Use \"help\" for jar argument instructions.");
 	    		System.exit(1);
 	    	}
@@ -93,7 +92,7 @@ public class Main {
 				else {
 					throw new Exception("Invalid command line arguments! Use \"help\" for jar argument instructions.");
 				}
-	 			//Parse Records and Dump//
+				 //Parse Records and Dump//
 				gbFact.getFiles(filter);
 				
 				//Update Host TaxonIDs//
