@@ -233,6 +233,8 @@ public class Main {
 	    			gbFact = GenBankFactory.getInstance();
 		 			DateNormalizer dn = DateNormalizer.getInstance();
 		 			dn.normalizeDates();
+					DateFormatter df = DateFormatter.getInstance();
+					df.formatDate();
 	    		}
 	    		else if (args[1].equalsIgnoreCase("ph1n1")) {
 	    			gbFact = GenBankFactory.getInstance();
