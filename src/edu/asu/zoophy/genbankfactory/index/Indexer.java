@@ -901,7 +901,7 @@ public class Indexer {
 			updateGeonameTypesQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, UPDATE_GEONAME_TYPES);
 			updateGeonameCountriesQuery = new DBQuery(conn, DBQuery.QT_INSERT_BATCH, UPDATE_GEONAME_COUNTRIES);
 			for (start = 0; start < stop; start+=batchSize) {
-				log.info("Retreiving Records for Indexer");
+				log.info("Retreiving Records for Indexer "+start.toString()+ "/" +stop.toString());
 				records = dao.getIndexableRecords(batchSize, start);
 				log.info("Indexing Records");
 				while (!records.isEmpty()) {
