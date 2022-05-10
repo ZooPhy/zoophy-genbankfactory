@@ -289,7 +289,11 @@ public class Indexer {
 								completeFlag = true;
 							}
 						}
-							
+						if (!completeFlag && record.getSequence().getDefinition().toLowerCase().contains("sars-cov-2")){
+							if (record.getSequence().getSegment_length()>29000){
+								completeFlag = true;
+							}
+						}
 						if (completeFlag && !record.getSequence().getDefinition().contains("partial") ) {
 							doc.add(new TextField("Gene", "Complete", Field.Store.YES));	
 						}
