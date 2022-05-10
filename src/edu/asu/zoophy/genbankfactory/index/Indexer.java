@@ -58,6 +58,7 @@ public class Indexer {
 	private final static String DATE_UNKNOWN = "10000101";
 	private final static String FIELD_UNKNOWN = "Unknown"; 
 	private final static String FIELD_UNAVAILABLE = "n/a";
+	private static final int SARS_THRESHOLD = 29000;
 	
 	private DBQuery updateGeonameIDsQuery;
 	private DBQuery updateGeonameTypesQuery;
@@ -290,7 +291,7 @@ public class Indexer {
 							}
 						}
 						if (!completeFlag && record.getSequence().getDefinition().toLowerCase().contains("sars-cov-2")){
-							if (record.getSequence().getSegment_length().intValue()>29000){
+							if (record.getSequence().getSegment_length()>SARS_THRESHOLD){
 								completeFlag = true;
 							}
 						}
