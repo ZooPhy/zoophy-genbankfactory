@@ -290,7 +290,7 @@ public class Indexer {
 							}
 						}
 						if (!completeFlag && record.getSequence().getDefinition().toLowerCase().contains("sars-cov-2")){
-							if (record.getSequence().getSegment_length()>29000){
+							if (record.getSequence().getSegment_length().intValue()>29000){
 								completeFlag = true;
 							}
 						}
